@@ -29,8 +29,8 @@ export function Header({ valuation, status, mode, chatOpen, onToggleChat }: Head
     <header className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-line bg-panel px-4 py-2.5 md:h-[52px] md:flex-nowrap md:py-0">
       <div className="order-1 flex items-center gap-2.5">
         <span className="h-3.5 w-3.5 rounded-[2px] bg-accent" aria-hidden="true" />
-        <span className="font-wide text-[17px] font-bold tracking-[-0.01em] text-fg">IA REVOLUTIONS</span>
-        <span className="rounded border border-accent/50 px-1 py-0.5 text-[8px] text-accent">CUENTA SIMULADA</span>
+        <span className="font-wide text-[20px] font-bold tracking-[-0.01em] text-fg">FinAlly</span>
+        <span className="rounded border border-accent/50 px-1 py-0.5 text-[8px] text-accent">SIM</span>
         {badge && (
           <span
             data-testid="market-mode"
@@ -47,7 +47,7 @@ export function Header({ valuation, status, mode, chatOpen, onToggleChat }: Head
       {/* On phones the figures drop to their own row below the brand and controls. */}
       <div className="order-4 flex basis-full flex-wrap items-baseline gap-x-5 gap-y-1 md:order-3 md:basis-auto md:flex-nowrap">
         <div className="flex min-w-0 items-baseline gap-3">
-          <span className="hidden text-[9px] tracking-wider text-muted lg:inline">VALOR DEL PORTAFOLIO</span>
+          <span className="hidden text-[9px] tracking-wider text-muted lg:inline">Portfolio value</span>
           <span
             data-testid="header-total-value"
             className="font-wide tabular text-[22px] font-semibold leading-none tracking-[-0.01em] text-fg"
@@ -63,12 +63,12 @@ export function Header({ valuation, status, mode, chatOpen, onToggleChat }: Head
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-[9px] tracking-wider text-muted">EFECTIVO</span>
+          <span className="text-[9px] tracking-wider text-muted">Cash</span>
           <span data-testid="header-cash" className="tabular text-[15px] font-semibold text-fg">
             {valuation ? formatMoney(valuation.cash) : "—"}
           </span>
         </div>
-        <div className="flex items-baseline gap-2"><span className="text-[9px] tracking-wider text-muted">P/L ABIERTO</span><span className={`tabular text-[13px] ${SIGN_TEXT[pnlSign(openPnl)]}`}>{valuation ? formatSignedMoney(openPnl) : "—"}</span></div>
+        <div className="flex items-baseline gap-2"><span className="text-[9px] tracking-wider text-muted">Open P&amp;L</span><span className={`tabular text-[13px] ${SIGN_TEXT[pnlSign(openPnl)]}`}>{valuation ? formatSignedMoney(openPnl) : "—"}</span></div>
       </div>
 
       <div className="order-3 ml-auto flex items-center gap-4 md:order-4">
@@ -93,7 +93,7 @@ export function Header({ valuation, status, mode, chatOpen, onToggleChat }: Head
               strokeLinejoin="round"
             />
           </svg>
-          ASISTENTE
+          Assistant
         </button>
       </div>
     </header>

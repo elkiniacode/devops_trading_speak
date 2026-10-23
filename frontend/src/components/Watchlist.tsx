@@ -52,17 +52,17 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
 
   return (
     <Panel
-      title="Lista de seguimiento"
-      meta={items ? `${items.length} símbolos` : undefined}
+      title="Watchlist"
+      meta={items ? `${items.length} symbols` : undefined}
       className="h-full"
       bodyClassName="flex flex-col"
     >
       <div className={`${COLUMNS} h-7 shrink-0 border-b border-line pr-7 pl-2 text-[9px] text-dim`}>
-        <span>Símbolo</span>
+        <span>Symbol</span>
         <span aria-hidden="true" />
-        <span className="text-right">Último</span>
+        <span className="text-right">Last</span>
         <span className="text-right" title={changeHint}>
-          Var. %
+          Chg %
         </span>
       </div>
 
@@ -89,14 +89,14 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
       <form onSubmit={submit} className="shrink-0 border-t border-line p-2.5">
         <div className="flex gap-2">
           <label htmlFor="watchlist-add" className="sr-only">
-            Agregar un símbolo a la lista
+            Add symbol to watchlist
           </label>
           <input
             id="watchlist-add"
             data-testid="watchlist-add-input"
             value={draft}
             onChange={(e) => setDraft(e.target.value.toUpperCase())}
-            placeholder="Agregar símbolo, ej. PYPL"
+            placeholder="Add symbol, e.g. PYPL"
             autoComplete="off"
             spellCheck={false}
             maxLength={8}
@@ -108,7 +108,7 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
             disabled={busy || !draft.trim()}
             className="h-8 rounded-[3px] bg-submit px-3.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-submit-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {busy ? "AGREGANDO…" : "AGREGAR"}
+            {busy ? "ADDING…" : "ADD"}
           </button>
         </div>
         {error && (
