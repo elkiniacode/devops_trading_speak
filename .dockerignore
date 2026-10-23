@@ -1,0 +1,53 @@
+# Only frontend/ and backend/ are needed to build the image.
+
+# VCS, tooling and docs
+.git
+.github
+.claude
+.vscode
+.idea
+**/.playwright-mcp
+memory
+planning
+scripts
+test
+README.md
+LICENSE
+CLAUDE.md
+Dockerfile
+.dockerignore
+
+# Secrets: never bake .env into the image (R34). A frontend .env*.local could also
+# point NEXT_PUBLIC_API_BASE at a dev server.
+**/.env
+**/.env.*
+!.env.example
+
+# Runtime data
+db
+**/*.db
+**/*.db-*
+
+# Node
+**/node_modules
+**/npm-debug.log*
+frontend/.next
+frontend/out
+frontend/coverage
+**/*.tsbuildinfo
+
+# Python
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+backend/static
+backend/tests
+.coverage
+htmlcov
+
+# OS
+**/.DS_Store
+**/Thumbs.db

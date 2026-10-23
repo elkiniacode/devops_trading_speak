@@ -1,0 +1,14 @@
+# backend-room plan
+- [x] T1 Read the contract and the shared helpers
+- [x] T2 Ship room.py (startup + public_view first) so backend-auth is unblocked
+- [x] T3 Full room.py: state machine, tick loop, scoring, ranking, views, answers, phone, CSV, reset
+- [x] T4 api/charla_room.py: attendee SSE, answer/phone, admin routes, admin SSE, CSV export
+- [x] T5 main.py wiring: routers, CHARLA_ONLY redirect, lifespan tasks
+- [x] T6 Tests: room, transitions, scoring, SSE, CHARLA_ONLY, CSV, restart
+- [x] T7 Full backend suite (incl. auth and classify tests, taken over from backend-auth T7 and llm T6) green — 357 passed
+- [x] T8 Review the devops files (Dockerfile.railway, railway.json, .railwayignore, start_charla.ps1)
+- [x] T9 Local Docker check on port 8020 (health, / -> 307, https Location, /api/portfolio 404), then remove the container — backend-only image (frontend build red: Presentador imports missing presenter/PresenterPanel)
+- [-] T10 Railway: whoami, project, volume, non-secret vars, domain, skeleton deploy, health — dropped: Elkin chose local only, no Railway
+- [-] T11 Send the lead copy-paste commands for Elkin's four secret variables — dropped with Railway
+- [x] T12 Milestone report to team-lead
+- [ ] T13 On request: fix backend bugs found by tester's E2E run during the local deploy

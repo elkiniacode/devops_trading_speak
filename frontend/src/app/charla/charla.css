@@ -1,0 +1,422 @@
+/*
+ * IA Revolutions visual system for the live-talk pages (CONTRACT §9.3), ported from the
+ * <helmet> CSS of Registro/Sala/Presentador.dc.html. Everything is scoped under .charla so
+ * it never leaks into the FinAlly workstation. Unlayered, so it wins over Tailwind's base.
+ */
+
+body:has(.charla) {
+  background: #070909;
+}
+
+.charla {
+  /* surfaces */
+  --c-bg: #070909;
+  --c-card: #0d1211;
+  --c-panel: #0a0d0c;
+  /* borders */
+  --c-border: #1f2523;
+  --c-border-2: #2a312f;
+  /* text */
+  --c-text: #f2f5f4;
+  --c-muted: #8b9491;
+  --c-muted-2: #b4bbb8;
+  --c-muted-3: #c9d1ce;
+  /* accents */
+  --c-teal: #5eead4;
+  --c-teal-dark: #2c6b61;
+  --c-cyan: #22d3ee;
+  --c-fuchsia: #ff2bd6;
+  --c-amber: #f5a524;
+  --c-amber-dark: #5a4410;
+  --c-error: #ff7a7a;
+  /* fonts */
+  --f-title: "Archivo Variable", "Archivo", sans-serif;
+  --f-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--f-mono);
+  font-feature-settings: normal;
+  color-scheme: dark;
+}
+
+.charla *,
+.charla *::before,
+.charla *::after {
+  box-sizing: border-box;
+}
+
+.charla a {
+  color: var(--c-teal);
+  text-decoration: none;
+}
+
+.charla button,
+.charla input,
+.charla textarea,
+.charla select {
+  font-family: var(--f-mono);
+}
+
+.charla button,
+.charla a,
+.charla .c-fld,
+.charla .c-ta {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.charla button {
+  cursor: pointer;
+}
+.charla button:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+.charla button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.charla button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.charla button:focus-visible,
+.charla a:focus-visible,
+.charla input:focus-visible,
+.charla textarea:focus-visible,
+.charla select:focus-visible,
+.charla [tabindex]:focus-visible {
+  outline: 2px solid var(--c-teal);
+  outline-offset: 2px;
+}
+
+/* --- animations ------------------------------------------------------------------------- */
+
+@keyframes holoShift {
+  0% {
+    background-position: 0 0, 0% 0;
+  }
+  100% {
+    background-position: 0 0, -220% 0;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Hologram title: gradient + scanlines, sliding sideways. */
+.charla .holo {
+  margin: 0;
+  font-family: var(--f-title);
+  font-stretch: 115%;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: transparent;
+  background:
+    repeating-linear-gradient(0deg, rgba(7, 9, 9, 0.55) 0 1px, transparent 1px 3px),
+    linear-gradient(100deg, #a5f3fc 0%, #e6fffb 30%, #67e8f9 52%, #cffafe 70%, #a5f3fc 100%);
+  background-size: 100% 3px, 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 1px rgba(207, 250, 254, 0.9)) drop-shadow(0 0 16px rgba(34, 211, 238, 0.35));
+  animation: holoShift 5s linear infinite;
+}
+
+.charla .rise {
+  animation: rise 0.45s ease-out both;
+}
+.charla .pop {
+  animation: pop 0.5s ease-out both;
+}
+.charla .pulse {
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.charla .live {
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+/* --- text ------------------------------------------------------------------------------- */
+
+/* Small mono caps, e.g. field labels and stat captions. */
+.charla .c-label {
+  font: 700 10px/1 var(--f-mono);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+/* Teal section kicker, e.g. "01 · ENTRADA". */
+.charla .c-kicker {
+  font: 700 11px/1 var(--f-mono);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--c-teal);
+}
+
+.charla .c-err {
+  font: 400 11px/1.3 var(--f-mono);
+  color: var(--c-error);
+}
+
+/* --- fields ----------------------------------------------------------------------------- */
+
+.charla .c-fld,
+.charla .c-ta {
+  width: 100%;
+  background: rgba(7, 9, 9, 0.7);
+  border: 1px solid var(--c-border-2);
+  border-radius: 8px;
+  color: var(--c-text);
+  /* 16px keeps iOS Safari from zooming into the field. */
+  font: 400 16px/1.5 var(--f-mono);
+}
+.charla .c-fld {
+  height: 48px;
+  padding: 0 14px;
+  line-height: 1;
+}
+.charla .c-ta {
+  min-height: 128px;
+  padding: 12px 14px;
+  resize: none;
+}
+.charla .c-fld::placeholder,
+.charla .c-ta::placeholder {
+  color: #5b6461;
+}
+.charla .c-fld:hover,
+.charla .c-ta:hover {
+  border-color: var(--c-teal-dark);
+}
+.charla .c-fld:focus,
+.charla .c-ta:focus {
+  border-color: var(--c-teal);
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+  outline: none;
+}
+.charla .c-fld[aria-invalid="true"],
+.charla .c-ta[aria-invalid="true"] {
+  border-color: var(--c-error);
+}
+
+/* --- buttons ---------------------------------------------------------------------------- */
+
+/* Primary: teal glass. */
+.charla .c-btn {
+  height: 50px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: rgba(94, 234, 212, 0.14);
+  border: 1px solid var(--c-teal);
+  border-radius: 8px;
+  font: 700 12px/1 var(--f-mono);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #e6fffb;
+  box-shadow: 0 0 24px rgba(94, 234, 212, 0.12);
+}
+.charla .c-btn:hover:not(:disabled) {
+  background: rgba(94, 234, 212, 0.24);
+}
+
+/* Secondary: outline only. */
+.charla .c-btn-ghost {
+  height: 46px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--c-border-2);
+  border-radius: 8px;
+  font: 700 11px/1 var(--f-mono);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--c-muted-2);
+}
+.charla .c-btn-ghost:hover:not(:disabled) {
+  border-color: var(--c-teal-dark);
+  color: var(--c-text);
+}
+
+/* Text link that is a button, e.g. "Cambiar correo". */
+.charla .c-btn-link {
+  min-height: 42px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  font: 400 12px/1 var(--f-mono);
+  color: var(--c-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.charla .c-btn-link:hover:not(:disabled) {
+  color: var(--c-muted-3);
+}
+
+/* --- containers ------------------------------------------------------------------------- */
+
+.charla .c-card {
+  padding: 14px;
+  background: var(--c-card);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+}
+
+.charla .c-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  background: rgba(7, 9, 9, 0.4);
+  border: 1px solid rgba(94, 234, 212, 0.4);
+  border-radius: 14px;
+  font: 700 10px/1 var(--f-mono);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--c-muted-2);
+}
+
+/* Amber "design only / draft" badge. */
+.charla .c-badge-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(245, 165, 36, 0.07);
+  border: 1px dashed var(--c-amber-dark);
+  border-radius: 6px;
+  font: 700 10px/1.2 var(--f-mono);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--c-amber);
+}
+
+/* Scroll column with a thin scrollbar. */
+.charla .c-col {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3330 transparent;
+}
+.charla .c-col::-webkit-scrollbar {
+  width: 4px;
+}
+.charla .c-col::-webkit-scrollbar-thumb {
+  background: #2a3330;
+  border-radius: 2px;
+}
+
+/* --- data-treatment policy page (/charla/datos/) ---------------------------------------- */
+
+.charla .c-doc {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.charla .c-doc h1 {
+  font-size: clamp(28px, 6vw, 42px);
+}
+.charla .c-doc h2 {
+  margin: 0 0 10px;
+  font: 700 11px/1.2 var(--f-mono);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--c-teal);
+}
+.charla .c-doc p,
+.charla .c-doc li {
+  margin: 0;
+  font: 400 13px/1.65 var(--f-mono);
+  color: var(--c-muted-2);
+  text-wrap: pretty;
+}
+.charla .c-doc ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.charla .c-doc strong {
+  color: var(--c-text);
+}
+
+/* --- reduced motion --------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .charla .holo,
+  .charla .rise,
+  .charla .pop,
+  .charla .pulse,
+  .charla .live,
+  .charla .anim {
+    animation: none !important;
+  }
+  .charla button:active:not(:disabled) {
+    transform: none !important;
+  }
+  .charla *,
+  .charla *::before,
+  .charla *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

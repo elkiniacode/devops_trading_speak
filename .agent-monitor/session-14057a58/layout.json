@@ -1,0 +1,28 @@
+{
+  "layers": [
+    { "id": "coordination", "name": "Coordination", "nodes": ["team-lead"] },
+    { "id": "specialists", "name": "Specialists", "nodes": ["database", "backend", "llm", "frontend", "devops"] },
+    { "id": "integration", "name": "Integration", "nodes": ["tester"] }
+  ],
+  "nodes": {
+    "team-lead": { "title": "Lead / Architect", "subtitle": "Contracts & coordination" },
+    "database": { "title": "Database", "subtitle": "SQLite layer" },
+    "backend": { "title": "Backend API", "subtitle": "FastAPI app" },
+    "llm": { "title": "LLM", "subtitle": "Chat and actions" },
+    "frontend": { "title": "Frontend", "subtitle": "Next.js UI" },
+    "devops": { "title": "DevOps", "subtitle": "Docker and scripts" },
+    "tester": { "title": "Integration Tester", "subtitle": "Playwright E2E" }
+  },
+  "edges": [
+    { "from": "team-lead", "to": "database" },
+    { "from": "team-lead", "to": "backend" },
+    { "from": "team-lead", "to": "llm" },
+    { "from": "team-lead", "to": "frontend" },
+    { "from": "team-lead", "to": "devops" },
+    { "from": "database", "to": "tester" },
+    { "from": "backend", "to": "tester" },
+    { "from": "llm", "to": "tester" },
+    { "from": "frontend", "to": "tester" },
+    { "from": "devops", "to": "tester" }
+  ]
+}

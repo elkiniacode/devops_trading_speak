@@ -1,0 +1,116 @@
+/* /charla/entrar/: one centered card on the Registro background glow. */
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  overflow: hidden;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6%, 8%) scale(1.12);
+  }
+}
+
+.glowA,
+.glowB {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.glowA {
+  left: -20%;
+  top: -25%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.28), rgba(94, 234, 212, 0) 66%);
+  filter: blur(30px);
+  animation: drift 16s ease-in-out infinite;
+}
+.glowB {
+  right: -25%;
+  bottom: -25%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(124, 108, 240, 0.32), rgba(124, 108, 240, 0) 66%);
+  filter: blur(34px);
+  animation: drift 19s ease-in-out -6s infinite reverse;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.logo {
+  display: block;
+  margin-bottom: 14px;
+}
+.logo img {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-size: clamp(30px, 7vw, 42px);
+  overflow-wrap: anywhere;
+}
+
+.body {
+  margin: 0;
+  font: 400 13px/1.6 var(--f-mono);
+  color: var(--c-muted-2);
+  text-wrap: pretty;
+}
+
+.error {
+  margin: 0;
+  font: 400 13px/1.6 var(--f-mono);
+  color: var(--c-error);
+  text-wrap: pretty;
+}
+
+.cta {
+  margin-top: 6px;
+}
+
+/* Pulsing ring while checking; a check mark once inside. */
+.badge {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-teal);
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-teal);
+}

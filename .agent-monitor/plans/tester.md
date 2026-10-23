@@ -1,0 +1,15 @@
+# tester plan
+- [x] T1 Read the contract and existing E2E conventions
+- [x] T2 Add charla env vars to start-server.mjs
+- [x] T3 Write charla.spec.ts against the contract
+- [x] T4 Write test/load/charla_load.py (validated locally: 40/40, PASS)
+- [x] T8 Monitor server sees implicit session teams (subagents/*.jsonl, agent-message + coordinator text, main -> team-lead), tests green, /api/runs lists this swarm
+- [x] T5 Charla spec on :8003: 3/3 (9/9 with --repeat-each 3); bug routed (Registro orb overlap, cosmetic)
+- [x] T9 Monitor pages follow the newest live run, with a waiting state
+- [x] T10 Run picker (shared, top-left, drawn by monitor-live.js on every page)
+- [x] T11 Hilos finished: live messages, delivery state, loading/empty/error states
+- [x] T12 CDN scripts and fonts vendored into web/vendor
+- [x] T13 planning/charla/LIVE_DEMO.md written for the talk
+- [x] T6 Integration: Playwright 36/36, build has out/charla/{,entrar,sala,presentador,datos}/index.html, backend 357 passed, vitest 249, load test PASS
+- [x] T7 Final pass/fail table to team-lead: backend 357/357, frontend 249/249, Playwright 36/36, load 40/40, Docker smoke PASS
+- [x] T14 Smoke-test the local Docker deploy on http://localhost:8000 (health, /charla/ pages, register -> enter -> answer -> reveal)

@@ -1,0 +1,43 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data (db/ is the Docker volume mount point; only .gitkeep is committed)
+db/*.db*
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+next-env.d.ts
+*.tsbuildinfo
+npm-debug.log*
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Frontend build copied into the backend (Docker does this itself)
+backend/static/
+
+# Playwright
+test/test-results/
+test/playwright-report/
+test/blob-report/
+test/playwright/.cache/
+.playwright-mcp/
+
+# Editors and OS
+.idea/
+.vscode/
+.claude/settings.local.json
+.DS_Store
+Thumbs.db

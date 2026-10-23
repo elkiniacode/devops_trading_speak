@@ -1,0 +1,32 @@
+# Files `railway up` does NOT upload (gitignore syntax). Only frontend/ and backend/ are
+# needed to build Dockerfile.railway; everything below is local state, secrets or docs.
+#
+# Folder names are anchored with a leading "/" on purpose: an unanchored `db/` would also
+# drop backend/app/db/ (the schema code), and `test/` would drop frontend/src/test/.
+
+# Caches and dependency folders (rebuilt inside the image)
+.uv-cache/
+**/node_modules/
+**/.venv/
+**/__pycache__/
+*.tsbuildinfo
+
+# Build output (the image builds its own)
+frontend/out/
+frontend/.next/
+backend/static/
+
+# Runtime data: the SQLite file lives on the Railway volume, never in the upload
+/db/
+
+# Secrets: Railway service variables replace .env
+.env
+.env.*
+
+# Tests, agent tooling and docs
+/test/
+/.agent-monitor/
+/.claude/
+/memory/
+/planning/
+/.playwright-mcp/

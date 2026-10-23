@@ -1,0 +1,38 @@
+{
+  "layers": [
+    { "id": "coordination", "name": "Coordination", "nodes": ["team-lead"] },
+    { "id": "backend", "name": "Backend", "nodes": ["backend-auth", "backend-room", "llm"] },
+    { "id": "frontend", "name": "Frontend", "nodes": ["frontend-shell", "frontend-registro", "frontend-sala", "frontend-presenter"] },
+    { "id": "delivery", "name": "Delivery", "nodes": ["devops", "monitor", "tester"] }
+  ],
+  "nodes": {
+    "team-lead": { "title": "Lead / Architect", "subtitle": "Contract & integration" },
+    "backend-auth": { "title": "Backend Auth", "subtitle": "Usernames · one-tap email" },
+    "backend-room": { "title": "Backend Room", "subtitle": "Quiz state · SSE · admin" },
+    "llm": { "title": "LLM", "subtitle": "Open-answer themes" },
+    "frontend-shell": { "title": "Frontend Shell", "subtitle": "Lib · styles · layout" },
+    "frontend-registro": { "title": "Registro", "subtitle": "Registration + entrar" },
+    "frontend-sala": { "title": "Sala", "subtitle": "Attendee phone screen" },
+    "frontend-presenter": { "title": "Presentador", "subtitle": "Presenter panel" },
+    "devops": { "title": "DevOps", "subtitle": "Railway deploy" },
+    "monitor": { "title": "Agent Monitor", "subtitle": "Live dashboards" },
+    "tester": { "title": "Tester", "subtitle": "E2E + load test" }
+  },
+  "edges": [
+    { "from": "team-lead", "to": "backend-auth" },
+    { "from": "team-lead", "to": "backend-room" },
+    { "from": "team-lead", "to": "llm" },
+    { "from": "backend-auth", "to": "frontend-shell" },
+    { "from": "backend-room", "to": "frontend-shell" },
+    { "from": "frontend-shell", "to": "frontend-registro" },
+    { "from": "frontend-shell", "to": "frontend-sala" },
+    { "from": "frontend-shell", "to": "frontend-presenter" },
+    { "from": "llm", "to": "frontend-presenter" },
+    { "from": "frontend-registro", "to": "tester" },
+    { "from": "frontend-sala", "to": "tester" },
+    { "from": "frontend-presenter", "to": "tester" },
+    { "from": "devops", "to": "tester" },
+    { "from": "team-lead", "to": "monitor" },
+    { "from": "team-lead", "to": "devops" }
+  ]
+}

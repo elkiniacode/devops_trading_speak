@@ -1,0 +1,19 @@
+{
+  "layers": [
+    { "id": "coordination", "name": "Coordination", "nodes": ["team-lead"] },
+    { "id": "workers", "name": "Workers", "nodes": ["scout", "maker"] },
+    { "id": "delivery", "name": "Delivery", "nodes": ["report"] }
+  ],
+  "nodes": {
+    "team-lead": { "title": "Lead", "subtitle": "Live monitor check" },
+    "scout": { "title": "Scout", "subtitle": "Reads the plan" },
+    "maker": { "title": "Maker", "subtitle": "Writes the summary" },
+    "report": { "title": "Summary", "subtitle": "Delivered file" }
+  },
+  "edges": [
+    { "from": "team-lead", "to": "scout" },
+    { "from": "team-lead", "to": "maker" },
+    { "from": "scout", "to": "maker" },
+    { "from": "maker", "to": "report" }
+  ]
+}

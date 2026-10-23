@@ -1,0 +1,19 @@
+{
+  "layers": [
+    { "id": "coordination", "name": "Coordination", "nodes": ["team-lead"] },
+    { "id": "pages", "name": "Pages", "nodes": ["arquitectura", "historial", "hilos"] }
+  ],
+  "nodes": {
+    "team-lead": { "title": "Lead", "subtitle": "Shared data layer, links, review" },
+    "arquitectura": { "title": "arquitectura", "subtitle": "Agentes.dc.html · live map" },
+    "historial": { "title": "historial", "subtitle": "Historial.dc.html · agent history" },
+    "hilos": { "title": "hilos", "subtitle": "Hilos.dc.html · agent threads" }
+  },
+  "edges": [
+    { "from": "team-lead", "to": "arquitectura" },
+    { "from": "team-lead", "to": "historial" },
+    { "from": "team-lead", "to": "hilos" },
+    { "from": "arquitectura", "to": "historial" },
+    { "from": "historial", "to": "hilos" }
+  ]
+}

@@ -1,0 +1,476 @@
+/* Registro.dc.html: the spheres "video" on the left, a 540 px form panel on the right.
+   At ≤ 760 px the animation fills the screen and the panel becomes a frosted bottom sheet. */
+
+.reg {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 640px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 540px;
+  background: var(--c-bg);
+  color: var(--c-text);
+  overflow: hidden;
+}
+
+/* --- left: animated media ---------------------------------------------------------------- */
+
+.media {
+  position: relative;
+  overflow: hidden;
+  background: #04060a;
+}
+
+.paused :global(.anim) {
+  animation-play-state: paused;
+}
+
+@keyframes d1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8%, 10%) scale(1.15);
+  }
+}
+@keyframes d2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-10%, -6%) scale(1.2);
+  }
+}
+@keyframes d3 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(6%, -12%);
+  }
+}
+@keyframes fl {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-22px) rotate(8deg);
+  }
+}
+
+.glowA,
+.glowB,
+.glowC,
+.orbA,
+.orbB,
+.orbC {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.glowA {
+  left: -12%;
+  top: -18%;
+  width: 70%;
+  height: 90%;
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.42), rgba(94, 234, 212, 0) 66%);
+  filter: blur(30px);
+  animation: d1 16s ease-in-out infinite;
+}
+.glowB {
+  right: -10%;
+  top: 6%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(124, 108, 240, 0.5), rgba(124, 108, 240, 0) 66%);
+  filter: blur(34px);
+  animation: d2 19s ease-in-out infinite;
+}
+.glowC {
+  left: 18%;
+  bottom: -24%;
+  width: 60%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(255, 43, 214, 0.3), rgba(255, 43, 214, 0) 66%);
+  filter: blur(36px);
+  animation: d3 22s ease-in-out infinite;
+}
+
+/* Chrome / iridescent spheres. */
+.orbA {
+  left: 8%;
+  top: 14%;
+  width: 34%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle at 30% 26%, #fff 0 3%, #d9e4ff 9%, #7f8cf0 32%, #1d1650 66%, #0b0820 100%);
+  box-shadow:
+    0 0 60px rgba(124, 108, 240, 0.35),
+    inset -14px -18px 40px rgba(0, 0, 0, 0.55);
+  animation: fl 14s ease-in-out infinite;
+}
+.orbA::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 40deg,
+    rgba(255, 43, 214, 0.35),
+    rgba(94, 234, 212, 0.4),
+    rgba(255, 200, 80, 0.3),
+    rgba(124, 108, 240, 0.4),
+    rgba(255, 43, 214, 0.35)
+  );
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+.orbB {
+  right: 14%;
+  top: 34%;
+  width: 22%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle at 32% 28%, #fff 0 3%, #d4fff7 9%, #5eead4 34%, #0d4a43 68%, #041513 100%);
+  box-shadow:
+    0 0 50px rgba(94, 234, 212, 0.35),
+    inset -10px -14px 30px rgba(0, 0, 0, 0.55);
+  animation: fl 11s ease-in-out -4s infinite;
+}
+.orbB::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 200deg,
+    rgba(255, 43, 214, 0.3),
+    rgba(34, 211, 238, 0.4),
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 43, 214, 0.3)
+  );
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+.orbC {
+  left: 38%;
+  top: 52%;
+  width: 15%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle at 30% 26%, #fff 0 3%, #ffe3f8 9%, #ff6be0 34%, #561350 68%, #14041a 100%);
+  box-shadow:
+    0 0 44px rgba(255, 43, 214, 0.3),
+    inset -8px -10px 24px rgba(0, 0, 0, 0.55);
+  animation: fl 13s ease-in-out -7s infinite;
+}
+
+/* Teal circuit traces with chamfered corners. */
+.circuit {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.circuit path {
+  fill: none;
+  stroke: var(--c-teal);
+  stroke-width: 1;
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 9, 9, 0.2) 0%, rgba(7, 9, 9, 0.1) 55%, rgba(10, 13, 12, 0.92) 100%),
+    linear-gradient(0deg, rgba(7, 9, 9, 0.92) 0%, rgba(7, 9, 9, 0.1) 55%, rgba(7, 9, 9, 0.55) 100%);
+}
+
+.logo {
+  position: absolute;
+  left: 56px;
+  top: 40px;
+  z-index: 4;
+  display: block;
+}
+.logo img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.copy {
+  position: absolute;
+  left: 56px;
+  right: 90px;
+  bottom: 76px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.eyebrow {
+  font: 700 11px/1 var(--f-mono);
+  letter-spacing: 2.4px;
+  color: var(--c-teal);
+}
+
+.hl {
+  font-size: clamp(34px, 3.6vw, 54px);
+}
+
+.sub {
+  margin: 0;
+  max-width: 520px;
+  font: 400 15px/1.6 var(--f-mono);
+  color: var(--c-muted-3);
+  text-wrap: pretty;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pause {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  z-index: 4;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 9, 9, 0.35);
+  border: 1.5px solid rgba(242, 245, 244, 0.85);
+  border-radius: 50%;
+  color: var(--c-text);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* --- right: form panel ------------------------------------------------------------------- */
+
+.panel {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 56px;
+  background: var(--c-panel);
+  border-left: 1px solid var(--c-border);
+  overflow: auto;
+}
+
+.inner {
+  width: 100%;
+  max-width: 410px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font: 800 32px/1.05 var(--f-title);
+  font-stretch: 112%;
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin: 0;
+  font: 400 13px/1.55 var(--f-mono);
+  color: var(--c-muted);
+  text-wrap: pretty;
+}
+
+.body {
+  margin: 0;
+  font: 400 13px/1.6 var(--f-mono);
+  color: var(--c-muted-2);
+  text-wrap: pretty;
+}
+
+.strong {
+  color: var(--c-text);
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font: 400 11px/1.4 var(--f-mono);
+}
+.hint:empty {
+  display: none;
+}
+
+.ok {
+  color: var(--c-teal);
+}
+
+.bad {
+  color: var(--c-error);
+}
+
+/* Tappable alternative username, e.g. "Usar «José P2»". */
+.suggest {
+  min-height: 32px;
+  padding: 0 12px;
+  background: rgba(94, 234, 212, 0.08);
+  border: 1px solid rgba(94, 234, 212, 0.45);
+  border-radius: 16px;
+  font: 700 11px/1 var(--f-mono);
+  letter-spacing: 0.4px;
+  color: var(--c-teal);
+}
+
+.formError {
+  margin: 0;
+}
+
+.notice {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 400 11px/1.4 var(--f-mono);
+  color: var(--c-muted);
+}
+.notice svg {
+  flex: none;
+}
+.notice a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Step 2: envelope with a pulsing ring. */
+.mail {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-teal);
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-teal);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel .actions .resendReady {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
+.tip {
+  font: 400 11px/1.5 var(--f-mono);
+  color: var(--c-muted);
+}
+
+/* --- phones ------------------------------------------------------------------------------ */
+
+@media (max-width: 760px) {
+  .reg {
+    display: block;
+    min-height: 0;
+  }
+  .media {
+    position: absolute;
+    inset: 0;
+    /* Own stacking context, so no animated orb can paint over the sheet (.panel, z-index 3). */
+    z-index: 0;
+  }
+  /* Keep the pink orb in the visible top half, not behind the form card. */
+  .orbC {
+    left: 8%;
+    top: 30%;
+    width: 13%;
+  }
+  .panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 76%;
+    justify-content: flex-start;
+    padding: 22px 20px 24px;
+    border-left: 0;
+    border-top: 1px solid rgba(94, 234, 212, 0.35);
+    border-radius: 22px 22px 0 0;
+    background: rgba(7, 9, 9, 0.6);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+  .copy {
+    left: 20px;
+    right: 20px;
+    top: 78px;
+    bottom: auto;
+    gap: 12px;
+  }
+  .logo {
+    left: 20px;
+    top: 22px;
+  }
+  .logo img {
+    height: 26px;
+  }
+  .pause {
+    right: 16px;
+    top: 18px;
+    bottom: auto;
+    width: 34px;
+    height: 34px;
+  }
+  .hl {
+    font-size: 30px;
+  }
+  .sub {
+    display: none;
+  }
+  .title {
+    font-size: 28px;
+  }
+}

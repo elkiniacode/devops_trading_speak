@@ -1,0 +1,52 @@
+{
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Write(memory/**)",
+            "async": true,
+            "command": "codex exec -m gpt-5.6-terra --skip-git-repo-check --sandbox read-only -o planning/PHASE_REVIEW.md \"A development phase of the FinAlly project just finished. Its summary is the most recently modified file in memory/. Review the work done in this phase against planning/PLAN.md and return the full review as Markdown.\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(codex exec:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "WebSearch",
+      "WebFetch(domain:massive.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "Bash(security find-certificate:*)",
+      "Bash(networksetup -getwebproxy:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)",
+      "Bash(gh search:*)",
+      "Bash(gh issue view:*)",
+      "Bash(claude auth:*)",
+      "Bash(claude auth whoami:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)"
+    ]
+  },
+  "sandbox": {
+    "enabled": false,
+    "autoAllowBashIfSandboxed": false
+  },
+  "env":{
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "in-process"
+
+}
