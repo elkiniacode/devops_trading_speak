@@ -96,6 +96,19 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
 
   useEffect(() => {
     const chart = chartRef.current;
+    const series = seriesRef.current;
+    if (!chart?.subscribeClick || !series?.coordinateToPrice) return;
+    const onClick = (event: { point?: { y: number } | null }) => {
+      if (prediction || event.point == null) return;
+      const price = series.coordinateToPrice(event.point.y);
+      if (price != null && Number.isFinite(Number(price)) && Number(price) > 0) setTarget(Number(price).toFixed(2));
+    };
+    chart.subscribeClick(onClick);
+    return () => chart.unsubscribeClick(onClick);
+  }, [prediction, candles, kind]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
     if (!chart) return;
     for (const series of indicatorsRef.current) chart.removeSeries?.(series);
     indicatorsRef.current = [];
@@ -219,7 +232,7 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
         <div ref={containerRef} data-testid="main-chart" data-ticker={ticker ?? ""} data-points={points.length} className="absolute inset-0" />
         {candles.length === 0 && <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[12px] text-muted">{ticker ? `Cargando velas de ${ticker}…` : "Selecciona una acción de la lista."}</div>}
       </div>
-      <div className="flex shrink-0 items-center gap-2 border-t border-line px-3 py-1.5 text-[9px]"><strong className="text-accent">PREDICCIÓN</strong><label className="text-muted">OBJETIVO <input aria-label="Precio objetivo" type="number" min="0" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder={quote?.price.toFixed(2) ?? "Precio"} className="ml-1 w-20 rounded border border-line-strong bg-ink px-1.5 py-1 text-fg" /></label>{[0.98, 0.99, 1.01, 1.02].map((factor) => <button key={factor} disabled={!quote} onClick={() => setTarget(((quote?.price ?? 0) * factor).toFixed(2))} className="rounded border border-line px-1.5 py-1 text-muted">{factor < 1 ? "−" : "+"}{Math.round(Math.abs(1 - factor) * 100)}%</button>)}{prediction ? <><span className={predictionHit === null ? "text-muted" : predictionHit ? "text-gain" : "text-loss"}>{prediction.finished ? predictionHit ? "ACIERTO" : "FUERA DE RANGO" : `${prediction.count}/10`}</span><button onClick={endPrediction} className="ml-auto rounded border border-line px-2 py-1">CERRAR</button></> : <button disabled={candles.length < 15} onClick={startPrediction} className="ml-auto rounded border border-accent px-2 py-1 text-accent disabled:opacity-40">INICIAR</button>}</div>
+      <div className="flex shrink-0 items-center gap-2 border-t border-line px-3 py-1.5 text-[9px]"><strong className="text-primary">PREDECIR</strong><span className="hidden text-muted lg:inline">Elige objetivo en el gráfico o ingresa el precio</span><label className="text-muted">OBJETIVO <input aria-label="Precio objetivo" type="number" min="0" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder={quote?.price.toFixed(2) ?? "Precio"} className="ml-1 w-20 rounded border border-line-strong bg-ink px-1.5 py-1 text-fg" /></label>{[0.98, 0.99, 1.01, 1.02].map((factor) => <button key={factor} disabled={!quote || !!prediction} onClick={() => setTarget(((quote?.price ?? 0) * factor).toFixed(2))} className="rounded border border-line px-1.5 py-1 text-muted">{factor < 1 ? "−" : "+"}{Math.round(Math.abs(1 - factor) * 100)}%</button>)}{prediction ? <><span className={predictionHit === null ? "text-muted" : predictionHit ? "text-gain" : "text-loss"}>{prediction.finished ? predictionHit ? "ACIERTO" : "FUERA DE RANGO" : `${prediction.count}/10`}</span><button onClick={endPrediction} className="ml-auto rounded border border-line px-2 py-1">CERRAR</button></> : <button disabled={candles.length < 15} onClick={startPrediction} className="ml-auto rounded border border-primary bg-primary/10 px-2 py-1 font-bold text-primary disabled:opacity-40">PREDECIR</button>}</div>
     </section>
   );
 }
