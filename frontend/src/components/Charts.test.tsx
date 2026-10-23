@@ -45,8 +45,9 @@ describe("MainChart", () => {
     const el = screen.getByTestId("main-chart");
     expect(el).toHaveAttribute("data-ticker", "AAPL");
     expect(el).toHaveAttribute("data-points", "3");
-    expect(series.createPriceLine).toHaveBeenCalledWith(expect.objectContaining({ price: 191, title: "ACTUAL" }));
-    expect(screen.getByText("desde el inicio de sesión")).toBeInTheDocument();
+    expect(series.createPriceLine).toHaveBeenCalledWith(expect.objectContaining({ price: 191, title: "LAST" }));
+    expect(screen.getByText("since session start")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("TOOLS · INDICATORS & DRAWINGS"));
     expect(screen.getByRole("button", { name: "SMA20" })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: "RSI14" }));
     expect(screen.getByRole("button", { name: "RSI14" })).toHaveAttribute("aria-pressed", "true");
@@ -54,7 +55,7 @@ describe("MainChart", () => {
 
   it("explains an empty chart", () => {
     render(<MainChart ticker="PYPL" quote={null} points={[]} mode="simulator" />);
-    expect(screen.getByText("Cargando velas de PYPL…")).toBeInTheDocument();
+    expect(screen.getByText("Loading candles for PYPL…")).toBeInTheDocument();
   });
 });
 

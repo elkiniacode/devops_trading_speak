@@ -99,7 +99,7 @@ export function PnlChart({ snapshots, liveTotal }: PnlChartProps) {
     <Panel
       title="Portfolio value"
       meta={pnl === null ? undefined : <span className={SIGN_TEXT[pnlSign(pnl)]}>{formatSignedMoney(pnl)} total</span>}
-      className="min-h-[200px]"
+      className="min-h-0"
     >
       <div ref={containerRef} data-testid="pnl-chart" data-points={count} className="absolute inset-0 px-1 pt-1" />
       {snapshots !== null && count < 2 && (

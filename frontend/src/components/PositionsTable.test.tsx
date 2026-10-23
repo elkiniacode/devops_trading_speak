@@ -31,6 +31,6 @@ describe("PositionsTable", () => {
 
   it("explains an empty portfolio", () => {
     render(<PositionsTable positions={[]} onSelect={() => {}} />);
-    expect(screen.getByText(/Aún no tienes posiciones/)).toBeInTheDocument();
+    expect(screen.getByText(/No open positions yet/)).toBeInTheDocument();
   });
 });

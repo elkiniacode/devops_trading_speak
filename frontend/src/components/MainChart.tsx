@@ -39,6 +39,7 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
   const [enabled, setEnabled] = useState<Indicator[]>(["SMA20", "VOL"]);
   const [prediction, setPrediction] = useState<{ candles: Candle[]; target: number; tolerance: number; count: number; finished: boolean } | null>(null);
   const [target, setTarget] = useState("");
+  const [predictOpen, setPredictOpen] = useState(false);
   const [crosshair, setCrosshair] = useState<Candle | null>(null);
   const shown = prediction?.candles ?? candles;
 
@@ -47,9 +48,10 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
     if (!container) return;
     const chart = createChart(container, {
       ...baseChartOptions,
-      layout: { background: { color: "#0d1211" }, textColor: "#8b9491", fontFamily: "JetBrains Mono, monospace" },
-      grid: { vertLines: { color: "#1f2523" }, horzLines: { color: "#1f2523" } },
-      rightPriceScale: { borderColor: "#2a312f" }, timeScale: { borderColor: "#2a312f", timeVisible: true },
+      autoSize: false,
+      layout: { background: { color: "#111a2b" }, textColor: "#8b9491", fontFamily: "JetBrains Mono, monospace" },
+      grid: { vertLines: { color: "#1c2940" }, horzLines: { color: "#1c2940" } },
+      rightPriceScale: { borderColor: "#26344d" }, timeScale: { borderColor: "#26344d", timeVisible: true },
     });
     chartRef.current = chart;
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(([entry]) => chart.applyOptions({ width: Math.floor(entry.contentRect.width), height: Math.floor(entry.contentRect.height) }));
@@ -159,11 +161,11 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
     const series = seriesRef.current;
     if (!series?.createPriceLine) return;
     const lines = [
-      { value: quote?.price, color: "#18a8e0", title: "ACTUAL" },
-      { value: levels?.entry, color: "#22d3ee", title: "ENTRADA" },
+      { value: quote?.price, color: "#18a8e0", title: "LAST" },
+      { value: levels?.entry, color: "#22d3ee", title: "ENTRY" },
       { value: levels?.stopLoss, color: "#ff7a7a", title: "SL" },
       { value: levels?.takeProfit, color: "#5eead4", title: "TP" },
-      ...(levels?.pending ?? []).slice(0, 10).map((value) => ({ value, color: "#f5a524", title: "ORDEN" })),
+      ...(levels?.pending ?? []).slice(0, 10).map((value) => ({ value, color: "#f5a524", title: "ORDER" })),
     ].filter((line): line is { value: number; color: string; title: string } => line.value != null);
     const handles = lines.map((line) => series.createPriceLine({ price: line.value, color: line.color, lineWidth: 1, axisLabelVisible: false, title: line.title }));
     return () => handles.forEach((handle) => series.removePriceLine(handle));
@@ -189,6 +191,7 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
     const tolerance = atr(candles) || last.close * 0.005;
     let count = 0;
     setPrediction({ candles: candles.map((c) => ({ ...c })), target: chosen, tolerance, count: 0, finished: false });
+    setPredictOpen(false);
     predictionTimer.current = setInterval(() => {
       count++;
       setPrediction((previous) => {
@@ -210,29 +213,40 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
   }
 
   const sign = quote ? pnlSign(quote.change_percent) : "zero";
-  const baseline = mode === "simulator" ? "desde el inicio de sesión" : "vs. cierre anterior";
+  const baseline = mode === "simulator" ? "since session start" : "vs. previous close";
   const readout = crosshair ?? shown[shown.length - 1];
   const predictionHit = prediction?.finished ? Math.abs(prediction.candles[prediction.candles.length - 1].close - prediction.target) <= prediction.tolerance : null;
 
   return (
-    <section className="flex min-h-[330px] flex-1 flex-col overflow-hidden rounded-[4px] border border-line bg-panel">
+    <section className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[4px] border border-line bg-panel">
       <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-line px-3 py-2">
         <h2 className="font-heading text-[23px] font-bold text-accent">{ticker ?? "—"}</h2>
         {quote && <><span className="tabular text-[20px] font-bold">{formatPrice(quote.price)}</span><span className={`tabular text-[12px] ${SIGN_TEXT[sign]}`}>{formatPercent(quote.change_percent)}</span></>}
         <span className="hidden text-[10px] text-muted xl:inline">{baseline}</span>
-        <div className="ml-auto flex flex-wrap gap-1" aria-label="Intervalo del gráfico">
+        <div className="ml-auto flex flex-wrap gap-1" aria-label="Chart timeframe">
           {TIMEFRAMES.map((tf) => <button key={tf} onClick={() => setTimeframe(tf)} className={`rounded border px-2 py-1 text-[10px] ${timeframe === tf ? "border-accent text-accent" : "border-line text-muted"}`}>{tf}</button>)}
-          <button onClick={() => setKind((v) => v === "candles" ? "line" : "candles")} className="ml-1 rounded border border-line-strong px-2 py-1 text-[10px] text-fg">{kind === "candles" ? "VELAS" : "LÍNEA"}</button>
+          <button onClick={() => setKind((v) => v === "candles" ? "line" : "candles")} className="ml-1 rounded border border-line-strong px-2 py-1 text-[10px] text-fg">{kind === "candles" ? "CANDLES" : "LINE"}</button>
+          <button aria-expanded={predictOpen} onClick={() => setPredictOpen((open) => !open)} className="ml-1 rounded border border-primary/70 bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">{prediction ? prediction.finished ? predictionHit ? "HIT" : "MISSED" : `${prediction.count}/10` : "PREDICT"}</button>
         </div>
       </header>
-      <div className="flex shrink-0 flex-wrap gap-1 border-b border-line px-3 py-1.5" aria-label="Indicadores">{INDICATORS.map((item) => <button key={item} aria-pressed={enabled.includes(item)} onClick={() => setEnabled((old) => old.includes(item) ? old.filter((value) => value !== item) : [...old, item])} className={`rounded border px-2 py-0.5 text-[9px] ${enabled.includes(item) ? "border-accent text-accent" : "border-line text-muted"}`}>{item}</button>)}<span className="ml-auto text-[9px] text-dim">{sourceLabel}</span></div>
-      <ChartDrawings ticker={ticker} timeframe={timeframe} chart={chartRef.current} series={seriesRef.current} container={containerRef.current} />
-      <div className="flex shrink-0 gap-3 border-b border-line px-3 py-1 text-[9px] text-muted"><span>O {readout ? formatPrice(readout.open) : "—"}</span><span>H {readout ? formatPrice(readout.high) : "—"}</span><span>L {readout ? formatPrice(readout.low) : "—"}</span><span>C {readout ? formatPrice(readout.close) : "—"}</span><span className="ml-auto">VOL {readout?.volume ?? "—"}</span></div>
+      <details className="group relative z-10 shrink-0 border-b border-line">
+        <summary className="cursor-pointer list-none px-3 py-1 text-[9px] text-muted">TOOLS · INDICATORS &amp; DRAWINGS <span className="float-right text-dim">{sourceLabel}</span></summary>
+        <div className="absolute left-0 right-0 top-full z-20 flex flex-col gap-1 border-b border-line bg-panel p-2 shadow-xl">
+          <div className="flex flex-wrap gap-1" aria-label="Indicators">{INDICATORS.map((item) => <button key={item} aria-pressed={enabled.includes(item)} onClick={() => setEnabled((old) => old.includes(item) ? old.filter((value) => value !== item) : [...old, item])} className={`rounded border px-2 py-0.5 text-[9px] ${enabled.includes(item) ? "border-accent text-accent" : "border-line text-muted"}`}>{item}</button>)}</div>
+          <div className="flex gap-3 text-[9px] text-muted"><span>O {readout ? formatPrice(readout.open) : "—"}</span><span>H {readout ? formatPrice(readout.high) : "—"}</span><span>L {readout ? formatPrice(readout.low) : "—"}</span><span>C {readout ? formatPrice(readout.close) : "—"}</span><span className="ml-auto">VOL {readout?.volume ?? "—"}</span></div>
+          <ChartDrawings ticker={ticker} timeframe={timeframe} chart={chartRef.current} series={seriesRef.current} container={containerRef.current} />
+        </div>
+      </details>
       <div className="relative min-h-0 flex-1">
         <div ref={containerRef} data-testid="main-chart" data-ticker={ticker ?? ""} data-points={points.length} className="absolute inset-0" />
-        {candles.length === 0 && <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[12px] text-muted">{ticker ? `Cargando velas de ${ticker}…` : "Selecciona una acción de la lista."}</div>}
+        {candles.length === 0 && <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[12px] text-muted">{ticker ? `Loading candles for ${ticker}…` : "Select a symbol from the watchlist."}</div>}
       </div>
-      <div className="flex shrink-0 items-center gap-2 border-t border-line px-3 py-1.5 text-[9px]"><strong className="text-primary">PREDECIR</strong><span className="hidden text-muted lg:inline">Elige objetivo en el gráfico o ingresa el precio</span><label className="text-muted">OBJETIVO <input aria-label="Precio objetivo" type="number" min="0" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder={quote?.price.toFixed(2) ?? "Precio"} className="ml-1 w-20 rounded border border-line-strong bg-ink px-1.5 py-1 text-fg" /></label>{[0.98, 0.99, 1.01, 1.02].map((factor) => <button key={factor} disabled={!quote || !!prediction} onClick={() => setTarget(((quote?.price ?? 0) * factor).toFixed(2))} className="rounded border border-line px-1.5 py-1 text-muted">{factor < 1 ? "−" : "+"}{Math.round(Math.abs(1 - factor) * 100)}%</button>)}{prediction ? <><span className={predictionHit === null ? "text-muted" : predictionHit ? "text-gain" : "text-loss"}>{prediction.finished ? predictionHit ? "ACIERTO" : "FUERA DE RANGO" : `${prediction.count}/10`}</span><button onClick={endPrediction} className="ml-auto rounded border border-line px-2 py-1">CERRAR</button></> : <button disabled={candles.length < 15} onClick={startPrediction} className="ml-auto rounded border border-primary bg-primary/10 px-2 py-1 font-bold text-primary disabled:opacity-40">PREDECIR</button>}</div>
+      {predictOpen && <div className="absolute right-3 top-[82px] z-30 w-[min(390px,calc(100%-24px))] rounded border border-primary/50 bg-panel p-3 shadow-xl">
+        <div className="mb-2 flex items-center justify-between"><strong className="font-heading text-[12px] text-primary">10-CANDLE PRICE PREDICTION</strong><button aria-label="Close prediction" onClick={() => setPredictOpen(false)} className="text-muted">×</button></div>
+        <p className="mb-2 text-[10px] text-muted">Click the chart or enter a target price.</p>
+        <div className="flex items-center gap-1.5"><label className="min-w-0 flex-1 text-[9px] text-muted">TARGET PRICE<input aria-label="Target price" type="number" min="0" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder={quote?.price.toFixed(2) ?? "Price"} className="mt-1 block h-8 w-full rounded border border-line-strong bg-ink px-2 text-fg" /></label>{[0.98, 0.99, 1.01, 1.02].map((factor) => <button key={factor} disabled={!quote || !!prediction} onClick={() => setTarget(((quote?.price ?? 0) * factor).toFixed(2))} className="mt-4 rounded border border-line px-1.5 py-1 text-[9px] text-muted">{factor < 1 ? "−" : "+"}{Math.round(Math.abs(1 - factor) * 100)}%</button>)}</div>
+        <div className="mt-3 flex items-center justify-between text-[10px]">{prediction && <span className={predictionHit === null ? "text-muted" : predictionHit ? "text-gain" : "text-loss"}>{prediction.finished ? predictionHit ? "Target hit" : "Outside target range" : `Candle ${prediction.count} of 10`}</span>}{prediction ? <button onClick={endPrediction} className="ml-auto rounded border border-line px-2 py-1">END</button> : <button disabled={candles.length < 15} onClick={startPrediction} className="ml-auto rounded border border-primary bg-primary/10 px-3 py-1.5 font-bold text-primary disabled:opacity-40">START PREDICTION</button>}</div>
+      </div>}
     </section>
   );
 }

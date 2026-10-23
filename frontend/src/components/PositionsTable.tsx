@@ -18,8 +18,8 @@ interface PositionsTableProps {
 
 const PRICE_NOTE = {
   live: undefined,
-  rest: "Último precio conocido; aún no hay precio en vivo",
-  cost: "Sin precio disponible: valorado al costo",
+  rest: "Last known price; live quote unavailable",
+  cost: "No price available; valued at cost",
 } as const;
 
 export function PositionsTable({ positions, onSelect, risk, onClose, onRisk }: PositionsTableProps) {
@@ -44,8 +44,8 @@ export function PositionsTable({ positions, onSelect, risk, onClose, onRisk }: P
   }
   return (
     <Panel
-      title="Posiciones"
-      meta={positions && positions.length > 0 ? `${positions.length} abiertas` : undefined}
+      title="Positions"
+      meta={positions && positions.length > 0 ? `${positions.length} open` : undefined}
       className="min-h-[150px] flex-1"
       bodyClassName="overflow-auto"
     >
@@ -53,27 +53,27 @@ export function PositionsTable({ positions, onSelect, risk, onClose, onRisk }: P
         <thead className="sticky top-0 z-10 bg-panel text-[11px] text-dim">
           <tr className="border-b border-line">
             <th scope="col" className="py-1.5 pl-3 text-left font-normal">
-              Símbolo
+              Symbol
             </th>
             <th scope="col" className="px-2 text-right font-normal">
-              Cant.
+              Qty
             </th>
             <th scope="col" className="px-2 text-right font-normal">
-              Costo prom.
+              Avg. cost
             </th>
             <th scope="col" className="px-2 text-right font-normal">
-              Precio
+              Price
             </th>
             <th scope="col" className="px-2 text-right font-normal">
-              Valor
+              Value
             </th>
             <th scope="col" className="px-2 text-right font-normal">
-              P&amp;L abierto
+              Unrealized P&amp;L
             </th>
             <th scope="col" className="pr-3 pl-2 text-right font-normal">
               P&amp;L %
             </th>
-            {onClose && <th scope="col" className="px-2 text-right font-normal">Acciones</th>}
+            {onClose && <th scope="col" className="px-2 text-right font-normal">Actions</th>}
           </tr>
         </thead>
         <tbody className="tabular">
@@ -118,11 +118,11 @@ export function PositionsTable({ positions, onSelect, risk, onClose, onRisk }: P
           })}
         </tbody>
       </table>
-      {editing && <div className="flex flex-wrap items-center gap-2 border-t border-line p-2 text-[10px]"><span className="text-accent">RIESGO · {editing}</span><label>SL <input aria-label="Stop loss de posición" type="number" min="0" step="any" value={stopLoss} onChange={(event) => setStopLoss(event.target.value)} className="w-20 rounded border border-line bg-ink px-1.5 py-1 text-fg" /></label><label>TP <input aria-label="Take profit de posición" type="number" min="0" step="any" value={takeProfit} onChange={(event) => setTakeProfit(event.target.value)} className="w-20 rounded border border-line bg-ink px-1.5 py-1 text-fg" /></label><button disabled={busy} onClick={() => void saveRisk(editing)} className="text-gain">GUARDAR</button><button onClick={() => setEditing(null)} className="text-muted">SALIR</button><span className="text-muted">Deja ambos vacíos para quitar los niveles.</span></div>}
+      {editing && <div className="flex flex-wrap items-center gap-2 border-t border-line p-2 text-[10px]"><span className="text-accent">RISK · {editing}</span><label>SL <input aria-label="Position stop loss" type="number" min="0" step="any" value={stopLoss} onChange={(event) => setStopLoss(event.target.value)} className="w-20 rounded border border-line bg-ink px-1.5 py-1 text-fg" /></label><label>TP <input aria-label="Position take profit" type="number" min="0" step="any" value={takeProfit} onChange={(event) => setTakeProfit(event.target.value)} className="w-20 rounded border border-line bg-ink px-1.5 py-1 text-fg" /></label><button disabled={busy} onClick={() => void saveRisk(editing)} className="text-gain">SAVE</button><button onClick={() => setEditing(null)} className="text-muted">CLOSE</button><span className="text-muted">Leave both blank to remove levels.</span></div>}
       {error && <p role="alert" className="px-3 text-[10px] text-loss">{error}</p>}
       {positions?.length === 0 && (
         <p className="px-3 py-4 text-[12.5px] text-muted">
-          Aún no tienes posiciones. Usa el panel de órdenes para comprar acciones.
+          No open positions yet. Use the order panel to buy shares.
         </p>
       )}
       {positions === null && <p className="px-3 py-4 text-[12.5px] text-dim">Cargando posiciones…</p>}

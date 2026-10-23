@@ -37,7 +37,7 @@ export function Heatmap({ positions, onSelect }: HeatmapProps) {
     <Panel
       title="Portfolio heatmap"
       meta={`Colored by P&L, ±${PNL_CLAMP}% scale`}
-      className="min-h-[200px]"
+      className="min-h-0"
       bodyClassName="p-1.5"
     >
       <div ref={boxRef} data-testid="heatmap" className="relative h-full w-full">

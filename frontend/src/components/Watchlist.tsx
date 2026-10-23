@@ -2,7 +2,6 @@
 
 import { type FormEvent, useState } from "react";
 
-import { useFlash } from "@/hooks/useFlash";
 import { formatPercent, formatPrice, pnlSign } from "@/lib/format";
 import type { PricePoint } from "@/lib/priceStore";
 import type { MarketMode, PriceMap, PriceUpdate, WatchlistItem } from "@/lib/types";
@@ -48,7 +47,7 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
     setError(await onRemove(ticker));
   }
 
-  const changeHint = mode === "simulator" ? "Cambio desde el inicio de sesión" : "Cambio desde el cierre anterior";
+  const changeHint = mode === "simulator" ? "Change since session start" : "Change since previous close";
 
   return (
     <Panel
@@ -69,7 +68,7 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
       <ul data-testid="watchlist" className="min-h-0 flex-1 overflow-y-auto">
         {items === null && <li className="px-3 py-4 text-[12px] text-dim">Cargando lista…</li>}
         {items?.length === 0 && (
-          <li className="px-3 py-4 text-[12px] text-muted">La lista está vacía. Agrega un símbolo abajo.</li>
+          <li className="px-3 py-4 text-[12px] text-muted">Your watchlist is empty. Add a symbol below.</li>
         )}
         {items?.map((item) => (
           <WatchlistRow
@@ -108,7 +107,7 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
             disabled={busy || !draft.trim()}
             className="h-8 rounded-[3px] bg-submit px-3.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-submit-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {busy ? "ADDING…" : "ADD"}
+        {busy ? "ADDING…" : "ADD"}
           </button>
         </div>
         {error && (
@@ -135,7 +134,6 @@ interface WatchlistRowProps {
 }
 
 export function WatchlistRow({ ticker, quote, points, selected, held = false, changeHint, onSelect, onRemove }: WatchlistRowProps) {
-  const flash = useFlash(quote?.price);
   const sign = quote ? pnlSign(quote.change_percent) : "zero";
 
   return (
@@ -152,16 +150,16 @@ export function WatchlistRow({ ticker, quote, points, selected, held = false, ch
         type="button"
         onClick={() => onSelect(ticker)}
         aria-pressed={selected}
-        aria-label={`Seleccionar ${ticker}`}
+        aria-label={`Select ${ticker}`}
         className={`${COLUMNS} h-11 min-w-0 flex-1 pl-2 text-left focus-visible:outline-offset-[-2px]`}
       >
-        <span className="min-w-0"><span className={`font-wide block truncate text-[12.5px] font-bold tracking-[0.01em] ${selected ? "text-accent" : "text-fg"}`}>{ticker}{held && <span className="ml-1 text-[9px] text-gain" title="Posición abierta">●</span>}</span><span className="block truncate text-[8px] text-dim">{STOCK_NAMES[ticker] ?? "Acción"}</span></span>
+        <span className="min-w-0"><span className={`font-wide block truncate text-[12.5px] font-bold tracking-[0.01em] ${selected ? "text-accent" : "text-fg"}`}>{ticker}{held && <span className="ml-1 text-[9px] text-gain" title="Open position">●</span>}</span><span className="block truncate text-[8px] text-dim">{STOCK_NAMES[ticker] ?? "Stock"}</span></span>
         <span className="flex justify-end">
           <Sparkline ticker={ticker} points={points} width={30} height={18} />
         </span>
         <span
           data-testid={`watchlist-price-${ticker}`}
-          className={`price-cell tabular rounded-[2px] py-0.5 text-right text-[11px] font-medium text-fg ${flash}`}
+          className="tabular rounded-[2px] py-0.5 text-right text-[11px] font-medium text-fg"
         >
           {quote ? formatPrice(quote.price) : "—"}
         </span>
@@ -177,8 +175,8 @@ export function WatchlistRow({ ticker, quote, points, selected, held = false, ch
         type="button"
         data-testid={`watchlist-remove-${ticker}`}
         onClick={() => onRemove(ticker)}
-        aria-label={`Quitar ${ticker} de la lista`}
-        title={`Quitar ${ticker}`}
+        aria-label={`Remove ${ticker} from watchlist`}
+        title={`Remove ${ticker}`}
         className="mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] text-dim opacity-0 transition-opacity group-hover:opacity-100 hover:bg-line hover:text-fg focus-visible:opacity-100"
       >
         <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">

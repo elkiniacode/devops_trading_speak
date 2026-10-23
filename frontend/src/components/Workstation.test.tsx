@@ -116,19 +116,19 @@ describe("Workstation", () => {
 
   it("selects a ticker and submits a market order", async () => {
     await renderLoaded();
-    fireEvent.click(screen.getByRole("button", { name: "Seleccionar MSFT" }));
+    fireEvent.click(screen.getByRole("button", { name: "Select MSFT" }));
     expect(screen.getByTestId("main-chart")).toHaveAttribute("data-ticker", "MSFT");
-    expect(screen.getByRole("region", { name: "Orden" })).toHaveTextContent("MSFT");
+    expect(screen.getByRole("region", { name: "Trade" })).toHaveTextContent("MSFT");
 
     const before = {
       portfolio: backend.count("/api/portfolio"),
       watchlist: backend.count("/api/watchlist"),
       history: backend.count("/api/portfolio/history"),
     };
-    fireEvent.change(screen.getByRole("spinbutton", { name: /MONTO/ }), { target: { value: "800" } });
-    fireEvent.click(screen.getByRole("button", { name: "COMPRAR MSFT" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: /AMOUNT/ }), { target: { value: "800" } });
+    fireEvent.click(screen.getByRole("button", { name: "BUY MSFT" }));
 
-    expect(await screen.findByText("ORDEN EJECUTADA")).toBeInTheDocument();
+    expect(await screen.findByText("ORDER FILLED")).toBeInTheDocument();
     expect(backend.calls.find((c) => c.path === "/api/orders" && c.method === "POST")?.body).toEqual(expect.objectContaining({ ticker: "MSFT", notional: 800, side: "buy", type: "market" }));
     expect(screen.getByTestId("header-cash")).toHaveTextContent("$9,200.00");
     expect(screen.getByTestId("position-qty-MSFT")).toHaveTextContent("2");
@@ -145,8 +145,8 @@ describe("Workstation", () => {
   it("shows a rejected order inline without refetching", async () => {
     await renderLoaded();
     const before = backend.count("/api/portfolio");
-    fireEvent.click(screen.getByRole("button", { name: "VENDER" }));
-    fireEvent.click(screen.getByRole("button", { name: "VENDER AAPL" }));
+    fireEvent.click(screen.getByRole("button", { name: /^SELL$/ }));
+    fireEvent.click(screen.getByRole("button", { name: "SELL AAPL" }));
     const message = await screen.findByRole("alert");
     expect(message).toHaveTextContent("Insufficient shares: you have 0 AAPL");
     expect(backend.count("/api/portfolio")).toBe(before);
@@ -173,7 +173,7 @@ describe("Workstation", () => {
     expect(screen.getByTestId("chat-panel")).toBeVisible();
     fireEvent.click(screen.getByTestId("chat-toggle"));
     expect(screen.queryByTestId("chat-panel")).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Orden" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Trade" })).toBeVisible();
     fireEvent.click(screen.getByTestId("chat-toggle"));
     expect(screen.getByTestId("chat-panel")).toBeVisible();
   });

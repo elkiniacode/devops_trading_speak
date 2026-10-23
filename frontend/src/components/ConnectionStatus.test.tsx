@@ -12,9 +12,9 @@ function LiveStatus() {
 
 describe("ConnectionStatus", () => {
   it.each([
-    ["connected", "En vivo"],
-    ["reconnecting", "Reconectando"],
-    ["disconnected", "Sin conexión"],
+    ["connected", "Live"],
+    ["reconnecting", "Reconnecting"],
+    ["disconnected", "Offline"],
   ] as const)("renders %s", (status, label) => {
     render(<ConnectionStatus status={status} />);
     const el = screen.getByTestId("connection-status");

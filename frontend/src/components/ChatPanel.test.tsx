@@ -89,9 +89,9 @@ describe("ChatPanel", () => {
       ["trade", "ok"],
       ["trade", "failed"],
     ]);
-    expect(actions[0]).toHaveTextContent("✓PYPL agregada a la lista");
-    expect(actions[1]).toHaveTextContent("Compradas 5 AAPL a $190.12");
-    expect(actions[2]).toHaveTextContent("✗Venta de 50 TSLA fallida: Insufficient shares: you have 0 TSLA, tried to sell 50");
+    expect(actions[0]).toHaveTextContent("✓PYPL added to watchlist");
+    expect(actions[1]).toHaveTextContent("Bought 5 AAPL at $190.12");
+    expect(actions[2]).toHaveTextContent("✗Sell 50 TSLA failed: Insufficient shares: you have 0 TSLA, tried to sell 50");
     expect(props.onActions).toHaveBeenCalledTimes(1);
   });
 

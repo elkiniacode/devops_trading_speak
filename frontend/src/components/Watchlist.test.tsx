@@ -1,7 +1,6 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import { FLASH_MS } from "@/hooks/useFlash";
 import { quote, watchItem } from "@/test/fixtures";
 
 import { Watchlist, WatchlistRow } from "./Watchlist";
@@ -35,7 +34,7 @@ describe("Watchlist", () => {
     expect(screen.getByTestId("watchlist-row-AAPL")).toHaveAttribute("data-direction", "up");
     expect(screen.getByTestId("watchlist-price-AAPL")).toHaveTextContent("191.50");
     expect(screen.getByTestId("watchlist-change-AAPL")).toHaveTextContent("+0.79%");
-    expect(screen.getByTestId("watchlist-change-AAPL")).toHaveAttribute("title", "Cambio desde el inicio de sesión");
+    expect(screen.getByTestId("watchlist-change-AAPL")).toHaveAttribute("title", "Change since session start");
     expect(screen.getByTestId("sparkline-AAPL")).toHaveAttribute("data-points", "3");
     // MSFT has no SSE price yet: falls back to the REST quote and an empty sparkline.
     expect(screen.getByTestId("watchlist-price-MSFT")).toHaveTextContent("400.00");
@@ -44,7 +43,7 @@ describe("Watchlist", () => {
 
   it("selects a ticker when its row is clicked", () => {
     const props = renderWatchlist();
-    fireEvent.click(screen.getByRole("button", { name: "Seleccionar MSFT" }));
+    fireEvent.click(screen.getByRole("button", { name: "Select MSFT" }));
     expect(props.onSelect).toHaveBeenCalledWith("MSFT");
   });
 
@@ -73,11 +72,7 @@ describe("Watchlist", () => {
   });
 });
 
-describe("price flash", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
+describe("steady watchlist prices", () => {
   function row(price: number) {
     return (
       <ul>
@@ -94,40 +89,15 @@ describe("price flash", () => {
     );
   }
 
-  it("does not flash on the first price", () => {
-    render(row(190));
+  it("keeps price values free of flash and glow classes as quotes change", () => {
+    const { rerender } = render(row(190));
     const cell = screen.getByTestId("watchlist-price-AAPL");
-    expect(cell).toHaveClass("price-cell");
+    expect(cell).toHaveTextContent("190.00");
+    expect(cell.className).not.toMatch(/flash|price-cell/);
+    rerender(row(190.5));
+    expect(cell).toHaveTextContent("190.50");
+    expect(cell.className).not.toMatch(/flash|price-cell/);
     expect(cell).not.toHaveClass("flash-up");
     expect(cell).not.toHaveClass("flash-down");
-  });
-
-  it("flashes green on an uptick, then removes the class", () => {
-    vi.useFakeTimers();
-    const { rerender } = render(row(190));
-    rerender(row(190.5));
-    const cell = screen.getByTestId("watchlist-price-AAPL");
-    expect(cell).toHaveClass("flash-up");
-    act(() => {
-      vi.advanceTimersByTime(FLASH_MS);
-    });
-    expect(cell).not.toHaveClass("flash-up");
-  });
-
-  it("flashes red on a downtick", () => {
-    vi.useFakeTimers();
-    const { rerender } = render(row(190));
-    rerender(row(189.9));
-    expect(screen.getByTestId("watchlist-price-AAPL")).toHaveClass("flash-down");
-  });
-
-  it("switches from green to red when the direction changes mid-flash", () => {
-    vi.useFakeTimers();
-    const { rerender } = render(row(190));
-    rerender(row(191));
-    rerender(row(190.5));
-    const cell = screen.getByTestId("watchlist-price-AAPL");
-    expect(cell).toHaveClass("flash-down");
-    expect(cell).not.toHaveClass("flash-up");
   });
 });

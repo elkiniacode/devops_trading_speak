@@ -7,9 +7,9 @@ import { ConnectionStatus } from "./ConnectionStatus";
 import { SIGN_TEXT } from "./tone";
 
 const MODE_BADGE: Record<MarketMode, { label: string; hint: string }> = {
-  simulator: { label: "SIM", hint: "Precios simulados" },
-  "massive-snapshot": { label: "RETRASADO", hint: "Precios de mercado con el retraso de tu plan" },
-  "massive-eod": { label: "CIERRE", hint: "Precios de cierre diario" },
+  simulator: { label: "SIM", hint: "Simulated prices" },
+  "massive-snapshot": { label: "DELAYED", hint: "Market prices delayed by your plan" },
+  "massive-eod": { label: "EOD", hint: "End-of-day prices" },
 };
 
 interface HeaderProps {
@@ -30,7 +30,6 @@ export function Header({ valuation, status, mode, chatOpen, onToggleChat }: Head
       <div className="order-1 flex items-center gap-2.5">
         <span className="h-3.5 w-3.5 rounded-[2px] bg-accent" aria-hidden="true" />
         <span className="font-wide text-[20px] font-bold tracking-[-0.01em] text-fg">FinAlly</span>
-        <span className="rounded border border-accent/50 px-1 py-0.5 text-[8px] text-accent">SIM</span>
         {badge && (
           <span
             data-testid="market-mode"

@@ -21,8 +21,8 @@ describe("Header", () => {
   });
 
   it.each([
-    ["massive-snapshot", "RETRASADO"],
-    ["massive-eod", "CIERRE"],
+    ["massive-snapshot", "DELAYED"],
+    ["massive-eod", "EOD"],
   ] as const)("labels %s as %s", (mode, label) => {
     render(<Header valuation={null} status="reconnecting" mode={mode} chatOpen={false} onToggleChat={() => {}} />);
     expect(screen.getByTestId("market-mode")).toHaveTextContent(label);

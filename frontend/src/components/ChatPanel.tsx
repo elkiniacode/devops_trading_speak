@@ -8,7 +8,7 @@ import type { ChatActions, ChatMessage, TradeAction, WatchlistAction } from "@/l
 
 export const MAX_MESSAGE_LENGTH = 2000;
 
-const SUGGESTIONS = ["¿Cómo va mi portafolio?", "Compra 5 NVDA", "Agrega PYPL a mi lista"];
+const SUGGESTIONS = ["How is my portfolio doing?", "Buy 5 NVDA", "Add PYPL to my watchlist"];
 
 interface ChatPanelProps {
   open: boolean;
@@ -26,19 +26,19 @@ export function hasActions(actions: ChatActions | null): boolean {
 export function describeTradeAction(a: TradeAction): string {
   const qty = `${formatQuantity(a.quantity)} ${a.ticker}`;
   if (a.status === "ok") {
-    const verb = a.side === "buy" ? "Compradas" : "Vendidas";
-    return a.price != null ? `${verb} ${qty} a ${formatMoney(a.price)}` : `${verb} ${qty}`;
+    const verb = a.side === "buy" ? "Bought" : "Sold";
+    return a.price != null ? `${verb} ${qty} at ${formatMoney(a.price)}` : `${verb} ${qty}`;
   }
-  const verb = a.side === "buy" ? "Compra" : "Venta";
-  return `${verb} de ${qty} fallida: ${a.error ?? "rechazada"}`;
+  const verb = a.side === "buy" ? "Buy" : "Sell";
+  return `${verb} ${qty} failed: ${a.error ?? "rejected"}`;
 }
 
 export function describeWatchlistAction(a: WatchlistAction): string {
   if (a.status === "ok") {
-    return a.action === "add" ? `${a.ticker} agregada a la lista` : `${a.ticker} eliminada de la lista`;
+    return a.action === "add" ? `${a.ticker} added to watchlist` : `${a.ticker} removed from watchlist`;
   }
-  const verb = a.action === "add" ? "Agregar" : "Eliminar";
-  return `${verb} ${a.ticker} falló: ${a.error ?? "rechazado"}`;
+  const verb = a.action === "add" ? "Add" : "Remove";
+  return `${verb} ${a.ticker} failed: ${a.error ?? "rejected"}`;
 }
 
 export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatPanelProps) {
@@ -93,7 +93,7 @@ export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatP
       setMessages((prev) => [...prev, reply]);
       if (hasActions(reply.actions)) onActions();
     } catch (err) {
-      setError(err instanceof ApiError ? err.detail : "El asistente no respondió. Inténtalo de nuevo.");
+      setError(err instanceof ApiError ? err.detail : "The assistant did not respond. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -111,13 +111,13 @@ export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatP
       id="chat-panel"
       data-testid="chat-panel"
       data-open={open}
-      aria-label="Asistente IA"
+      aria-label="Assistant"
       hidden={!open}
       className="flex min-h-[220px] min-h-0 w-full flex-1 flex-col border border-line bg-panel"
     >
       <header className="flex h-10 shrink-0 items-center gap-2 border-b border-line px-3">
         <span className="h-2.5 w-2.5 rounded-[2px] bg-accent" aria-hidden="true" />
-        <h2 className="text-[13px] font-semibold text-fg">Asistente IA</h2>
+        <h2 className="text-[13px] font-semibold text-fg">Assistant</h2>
         <button
           type="button"
           onClick={onClose}
@@ -135,7 +135,7 @@ export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatP
         {messages.length === 0 && !loading && (
           <div className="space-y-3 pt-2">
             <p className="text-[13px] leading-relaxed text-muted">
-              Consulta tus posiciones, el riesgo o tus resultados. Pídeme comprar, vender o actualizar tu lista.
+              Ask about your positions, risk, or P&amp;L. Tell me to buy, sell, or update your watchlist.
             </p>
             <div className="flex flex-wrap gap-1.5">
               {SUGGESTIONS.map((s) => (
@@ -166,7 +166,7 @@ export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatP
               <span className="typing-dot h-1.5 w-1.5 rounded-full bg-primary" />
               <span className="typing-dot h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
-            FinAlly está pensando
+            FinAlly is thinking
           </div>
         )}
 
@@ -183,7 +183,7 @@ export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatP
 
       <form onSubmit={submit} className="shrink-0 border-t border-line p-2.5">
         <label htmlFor="chat-input" className="sr-only">
-          Mensaje para el asistente
+          Message for the assistant
         </label>
         <textarea
           id="chat-input"
@@ -194,18 +194,18 @@ export function ChatPanel({ open, onClose, send, loadHistory, onActions }: ChatP
           onKeyDown={onKeyDown}
           rows={2}
           maxLength={MAX_MESSAGE_LENGTH}
-          placeholder="Pregunta u ordena algo… ej. compra 10 AAPL"
+          placeholder="Ask FinAlly, e.g. buy 10 AAPL"
           className="block w-full resize-none rounded-[3px] border border-line-strong bg-ink px-2.5 py-2 text-[13px] leading-snug text-fg placeholder:text-dim focus:border-accent focus:outline-none"
         />
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-[9px] text-dim">Enter para enviar · Shift+Enter para nueva línea</span>
+          <span className="text-[9px] text-dim">Enter to send · Shift+Enter for a new line</span>
           <button
             type="submit"
             data-testid="chat-send-button"
             disabled={loading || !draft.trim()}
             className="h-8 rounded-[3px] bg-submit px-4 text-[12.5px] font-semibold text-white transition-colors hover:bg-submit-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            ENVIAR
+            SEND
           </button>
         </div>
       </form>
@@ -236,7 +236,7 @@ function MessageView({ message }: { message: ChatMessage }) {
             <ActionLine key={`t${i}`} kind="trade" ok={a.status === "ok"} text={describeTradeAction(a)} />
           ))}
           {actions.orders?.map((a, i) => <ActionLine key={`o${i}`} kind="trade" ok={a.status === "ok"} text={a.status === "ok" ? `Orden ${a.type} ${a.side} ${a.ticker}: ${a.order_status}` : `Orden ${a.ticker}: ${a.error}`} />)}
-          {actions.closes?.map((a, i) => <ActionLine key={`c${i}`} kind="trade" ok={a.status === "ok"} text={a.status === "ok" ? `Posición ${a.ticker} cerrada` : `Cierre ${a.ticker}: ${a.error}`} />)}
+          {actions.closes?.map((a, i) => <ActionLine key={`c${i}`} kind="trade" ok={a.status === "ok"} text={a.status === "ok" ? `${a.ticker} position closed` : `Close ${a.ticker}: ${a.error}`} />)}
           {actions.risks?.map((a, i) => <ActionLine key={`r${i}`} kind="trade" ok={a.status === "ok"} text={a.status === "ok" ? `Riesgo ${a.ticker} actualizado` : `Riesgo ${a.ticker}: ${a.error}`} />)}
         </ul>
       )}

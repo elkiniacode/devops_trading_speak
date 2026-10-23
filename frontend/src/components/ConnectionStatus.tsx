@@ -1,9 +1,9 @@
 import type { ConnectionStatus as Status } from "@/lib/priceStore";
 
 const LABEL: Record<Status, string> = {
-  connected: "En vivo",
-  reconnecting: "Reconectando",
-  disconnected: "Sin conexión",
+  connected: "Live",
+  reconnecting: "Reconnecting",
+  disconnected: "Offline",
 };
 
 const DOT: Record<Status, string> = {
@@ -19,8 +19,8 @@ export function ConnectionStatus({ status }: { status: Status }) {
       data-testid="connection-status"
       data-status={status}
       role="status"
-      aria-label={`Precios: ${LABEL[status].toLowerCase()}`}
-      title={`Precios: ${LABEL[status].toLowerCase()}`}
+      aria-label={`Prices: ${LABEL[status].toLowerCase()}`}
+      title={`Prices: ${LABEL[status].toLowerCase()}`}
       className="flex items-center gap-1.5 text-[12px] text-muted"
     >
       <span className={`inline-block h-2 w-2 rounded-full ${DOT[status]}`} aria-hidden="true" />

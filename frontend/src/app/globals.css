@@ -74,57 +74,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/*
- * Price flash (CONTRACTS §9): flash-up / flash-down is on the cell for ~500 ms while the tint
- * fades to nothing. Two identical keyframe names per direction (flash-a / flash-b alternate)
- * restart the fade on every tick, even when consecutive ticks go the same way.
- */
-@keyframes flash-up-a {
-  from {
-    background-color: rgb(47 196 140 / 0.34);
-  }
-  to {
-    background-color: rgb(47 196 140 / 0);
-  }
-}
-@keyframes flash-up-b {
-  from {
-    background-color: rgb(47 196 140 / 0.34);
-  }
-  to {
-    background-color: rgb(47 196 140 / 0);
-  }
-}
-@keyframes flash-down-a {
-  from {
-    background-color: rgb(242 87 92 / 0.34);
-  }
-  to {
-    background-color: rgb(242 87 92 / 0);
-  }
-}
-@keyframes flash-down-b {
-  from {
-    background-color: rgb(242 87 92 / 0.34);
-  }
-  to {
-    background-color: rgb(242 87 92 / 0);
-  }
-}
-
-.price-cell.flash-up.flash-a {
-  animation: flash-up-a 500ms ease-out;
-}
-.price-cell.flash-up.flash-b {
-  animation: flash-up-b 500ms ease-out;
-}
-.price-cell.flash-down.flash-a {
-  animation: flash-down-a 500ms ease-out;
-}
-.price-cell.flash-down.flash-b {
-  animation: flash-down-b 500ms ease-out;
-}
-
 .heat-tile {
   transition:
     left 300ms ease,
