@@ -44,6 +44,7 @@ test('shows the default watchlist, $10,000 and live prices', async ({ page }) =>
   await expect(page.getByTestId('header-cash')).toHaveText(/10,000\.00/);
 
   await expect(positionRows(page)).toHaveCount(0);
+  await page.getByRole('button', { name: 'MERCADOS' }).click();
   await expect(page.getByTestId('heatmap-empty')).toBeVisible();
   await expect.poll(() => dataPoints(page.getByTestId('pnl-chart'))).toBeGreaterThanOrEqual(1);
   await expect(page.getByTestId('chat-panel').or(page.getByTestId('chat-toggle')).first()).toBeVisible();

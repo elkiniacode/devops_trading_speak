@@ -69,9 +69,15 @@ async def place_order(body: OrderBody, ctx: AppContext = Depends(get_ctx)) -> di
     if side not in {"buy", "sell"} or kind not in {"market", "limit", "stop"}:
         raise HTTPException(400, "Orden o lado no válido")
     async with ctx.trade_lock:
-        existing = db.get_market_request(body.client_order_id) if kind == "market" else db.get_order_by_client_id(body.client_order_id)
+        market_request = db.get_market_request(body.client_order_id)
+        pending_request = db.get_order_by_client_id(body.client_order_id)
+        if (kind == "market" and pending_request) or (kind != "market" and market_request):
+            raise HTTPException(409, "El identificador ya se utilizó para otra orden")
+        existing = market_request if kind == "market" else pending_request
         if existing:
-            if existing["ticker"] != ticker or existing["side"] != side or existing["notional"] != body.notional or (kind != "market" and existing["type"] != kind):
+            if (existing["ticker"] != ticker or existing["side"] != side or existing["notional"] != body.notional or
+                (kind != "market" and (existing["type"] != kind or existing["trigger_price"] != body.trigger_price or
+                 existing["stop_loss"] != body.stop_loss or existing["take_profit"] != body.take_profit))):
                 raise HTTPException(409, "El identificador ya se utilizó para otra orden")
             if kind != "market":
                 return {"status": existing["status"], "order": existing}

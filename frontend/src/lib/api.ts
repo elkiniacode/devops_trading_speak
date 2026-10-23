@@ -11,8 +11,8 @@ import type {
   WatchlistResponse,
 } from "./types";
 
-/** "" means same origin (production). In dev, point at the backend, e.g. http://localhost:8001. */
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
+/** Production is always same-origin; a developer's .env.local must not leak into the static export. */
+export const API_BASE = process.env.NODE_ENV === "production" ? "" : (process.env.NEXT_PUBLIC_API_BASE ?? "");
 
 export const PRICE_STREAM_URL = `${API_BASE}/api/stream/prices`;
 

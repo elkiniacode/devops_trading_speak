@@ -4,11 +4,11 @@
   --font-sans: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
 
   /* Surfaces: blue-ink, never pure black (PLAN §2). */
-  --color-ink: #070909;
-  --color-panel: #0d1211;
-  --color-raised: #141a18;
-  --color-line: #1f2523;
-  --color-line-strong: #2a312f;
+  --color-ink: #0b1220;
+  --color-panel: #111a2b;
+  --color-raised: #18243a;
+  --color-line: #26344d;
+  --color-line-strong: #344563;
 
   /* Text */
   --color-fg: #f2f5f4;
@@ -16,15 +16,15 @@
   --color-dim: #606966;
 
   /* Brand (PLAN §2): yellow marks focus and selection, blue is information, purple submits. */
-  --color-accent: #5eead4;
-  --color-primary: #22d3ee;
-  --color-submit: #0e2925;
-  --color-submit-hover: #17443d;
+  --color-accent: #f5b400;
+  --color-primary: #18a8e0;
+  --color-submit: #71378d;
+  --color-submit-hover: #8543a4;
 
   /* Market movement. Keep the tile colors in sync with src/lib/heatmap.ts. */
-  --color-gain: #5eead4;
-  --color-loss: #ff7a7a;
-  --color-tile: #25312e;
+  --color-gain: #10b981;
+  --color-loss: #ef4444;
+  --color-tile: #253957;
 }
 
 /* Base styles live in the base layer so Tailwind utilities (e.g. focus:outline-none) win. */

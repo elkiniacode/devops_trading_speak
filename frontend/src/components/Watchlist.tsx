@@ -12,7 +12,7 @@ import { Sparkline } from "./Sparkline";
 import { SIGN_TEXT } from "./tone";
 
 /** Grid shared by the column headings and the rows so they line up. */
-const COLUMNS = "grid grid-cols-[minmax(52px,1fr)_60px_66px_58px] items-center gap-x-2";
+const COLUMNS = "grid grid-cols-[minmax(48px,1fr)_30px_58px_48px] items-center gap-x-1";
 const STOCK_NAMES: Record<string, string> = { AAPL: "Apple", GOOGL: "Alphabet", MSFT: "Microsoft", AMZN: "Amazon", TSLA: "Tesla", NVDA: "Nvidia", META: "Meta", JPM: "JPMorgan", V: "Visa", NFLX: "Netflix", AMD: "AMD", INTC: "Intel", ORCL: "Oracle", PYPL: "PayPal", BAC: "Bank of America", GS: "Goldman Sachs", DIS: "Disney", WMT: "Walmart" };
 
 interface WatchlistProps {
@@ -57,7 +57,7 @@ export function Watchlist({ items, prices, history, selectedTicker, mode, heldTi
       className="h-full"
       bodyClassName="flex flex-col"
     >
-      <div className={`${COLUMNS} h-7 shrink-0 border-b border-line pr-7 pl-3 text-[11px] text-dim`}>
+      <div className={`${COLUMNS} h-7 shrink-0 border-b border-line pr-7 pl-2 text-[9px] text-dim`}>
         <span>Símbolo</span>
         <span aria-hidden="true" />
         <span className="text-right">Último</span>
@@ -153,22 +153,22 @@ export function WatchlistRow({ ticker, quote, points, selected, held = false, ch
         onClick={() => onSelect(ticker)}
         aria-pressed={selected}
         aria-label={`Seleccionar ${ticker}`}
-        className={`${COLUMNS} h-11 min-w-0 flex-1 pl-3 text-left focus-visible:outline-offset-[-2px]`}
+        className={`${COLUMNS} h-11 min-w-0 flex-1 pl-2 text-left focus-visible:outline-offset-[-2px]`}
       >
         <span className="min-w-0"><span className={`font-wide block truncate text-[12.5px] font-bold tracking-[0.01em] ${selected ? "text-accent" : "text-fg"}`}>{ticker}{held && <span className="ml-1 text-[9px] text-gain" title="Posición abierta">●</span>}</span><span className="block truncate text-[8px] text-dim">{STOCK_NAMES[ticker] ?? "Acción"}</span></span>
         <span className="flex justify-end">
-          <Sparkline ticker={ticker} points={points} />
+          <Sparkline ticker={ticker} points={points} width={30} height={18} />
         </span>
         <span
           data-testid={`watchlist-price-${ticker}`}
-          className={`price-cell tabular -mr-1 rounded-[2px] px-1 py-0.5 text-right text-[13px] font-medium text-fg ${flash}`}
+          className={`price-cell tabular rounded-[2px] py-0.5 text-right text-[11px] font-medium text-fg ${flash}`}
         >
           {quote ? formatPrice(quote.price) : "—"}
         </span>
         <span
           data-testid={`watchlist-change-${ticker}`}
           title={changeHint}
-          className={`tabular text-right text-[12.5px] font-medium ${SIGN_TEXT[sign]}`}
+          className={`tabular text-right text-[10px] font-medium ${SIGN_TEXT[sign]}`}
         >
           {quote ? formatPercent(quote.change_percent) : "—"}
         </span>
