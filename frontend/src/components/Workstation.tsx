@@ -161,7 +161,7 @@ export function WorkstationLayout() {
       )}
 
       <div className="relative flex min-h-0 flex-1">
-        <main className="grid min-h-0 min-w-0 flex-1 gap-2 p-2 md:grid-cols-[250px_minmax(0,1fr)] xl:pr-0">
+        <main className="grid min-h-0 min-w-0 flex-1 gap-2 p-2 md:grid-cols-[272px_minmax(0,1fr)_336px]">
           <div className="min-h-0 max-md:h-[440px]">
             <Watchlist
               items={watchlist}
@@ -176,7 +176,7 @@ export function WorkstationLayout() {
             />
           </div>
 
-          <div className="flex min-h-0 min-w-0 flex-col gap-2 md:overflow-y-auto md:pr-2">
+          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(260px,1fr)_auto_190px_220px] gap-2 overflow-y-auto">
             <MainChart
               ticker={chartTicker}
               quote={chartTicker ? prices[chartTicker] : null}
@@ -187,12 +187,16 @@ export function WorkstationLayout() {
                 takeProfit: extras.risk.find((risk) => risk.ticker === chartTicker)?.take_profit,
                 pending: extras.orders.filter((order) => order.status === "pending" && order.ticker === chartTicker).map((order) => order.trigger_price) }}
             />
-            <section className="min-h-[260px] flex-1 rounded border border-line bg-panel p-2">
+            <OrderTicket ticker={chartTicker} quote={chartTicker ? prices[chartTicker] : undefined} holdings={holdings} onDone={() => { void refreshAll(); reloadExtras(); }} />
+            <div className="grid min-h-0 grid-cols-2 gap-2">
+              <Heatmap positions={valuation?.positions ?? null} onSelect={selectTicker} />
+              <PnlChart snapshots={snapshots} liveTotal={valuation?.totalValue ?? null} />
+            </div>
+            <section className="min-h-0 overflow-hidden rounded border border-line bg-panel p-2">
               <nav className="mb-2 flex flex-wrap gap-1 border-b border-line pb-2" aria-label="Paneles del terminal">
-                {([["positions", "POSICIONES"], ["markets", "MERCADOS"], ["orders", "ÓRDENES"], ["history", "HISTORIAL"], ["journal", "DIARIO"]] as const).map(([key, label]) => <button key={key} onClick={() => setDock(key)} aria-pressed={dock === key} className={`rounded px-2.5 py-1.5 text-[9px] font-bold tracking-wide ${dock === key ? "bg-accent/10 text-accent" : "text-muted hover:text-fg"}`}>{label}</button>)}
+                {([["positions", "POSICIONES"], ["orders", "ÓRDENES"], ["history", "HISTORIAL"], ["journal", "JOURNAL"]] as const).map(([key, label]) => <button key={key} onClick={() => setDock(key)} aria-pressed={dock === key} className={`rounded px-2.5 py-1.5 text-[9px] font-bold tracking-wide ${dock === key ? "bg-accent/10 text-accent" : "text-muted hover:text-fg"}`}>{label}</button>)}
               </nav>
-              <div hidden={dock !== "positions"} className="h-[190px]"><PositionsTable positions={valuation?.positions ?? null} onSelect={selectTicker} risk={Object.fromEntries(extras.risk.map((item) => [item.ticker, item]))} onClose={onClosePosition} onRisk={onSetRisk} /></div>
-              <div hidden={dock !== "markets"} className="grid gap-1.5 lg:h-[220px] lg:grid-cols-2"><Heatmap positions={valuation?.positions ?? null} onSelect={selectTicker} /><PnlChart snapshots={snapshots} liveTotal={valuation?.totalValue ?? null} /></div>
+              <div hidden={dock !== "positions"} className="h-[calc(100%-36px)]"><PositionsTable positions={valuation?.positions ?? null} onSelect={selectTicker} risk={Object.fromEntries(extras.risk.map((item) => [item.ticker, item]))} onClose={onClosePosition} onRisk={onSetRisk} /></div>
               <div hidden={dock !== "orders"}><OrdersPanel orders={extras.orders} onChanged={() => { reloadExtras(); void refreshAll(); }} /></div>
               <div hidden={dock !== "history"} className="max-h-[220px] overflow-auto text-[10px]">{extras.trades.length ? extras.trades.map(trade => <div key={trade.id} className="flex gap-3 border-b border-line py-2"><time className="text-muted">{new Date(trade.executed_at).toLocaleString()}</time><span className={trade.side === "buy" ? "text-gain" : "text-loss"}>{trade.side.toUpperCase()} {trade.ticker}</span><span>{trade.quantity} × {formatMoney(trade.price)}</span></div>) : <p className="py-8 text-center text-muted">Aún no hay operaciones.</p>}</div>
               <div hidden={dock !== "journal"} className="max-h-[220px] overflow-auto text-[10px]">{extras.activity.length ? extras.activity.map(event => <div key={event.id} className="flex gap-3 border-b border-line py-2"><time className="shrink-0 text-muted">{new Date(event.created_at).toLocaleString()}</time><span>{event.message}</span></div>) : <p className="py-8 text-center text-muted">El diario aparecerá aquí cuando haya actividad.</p>}</div>
@@ -200,8 +204,7 @@ export function WorkstationLayout() {
           </div>
         </main>
 
-        <div className="flex w-[320px] shrink-0 flex-col gap-2 overflow-y-auto p-2 pl-0">
-          <OrderTicket ticker={chartTicker} quote={chartTicker ? prices[chartTicker] : undefined} holdings={holdings} onDone={() => { void refreshAll(); reloadExtras(); }} />
+        <aside className="flex min-h-0 w-[336px] shrink-0 flex-col gap-2 overflow-y-auto p-2 pl-0">
           <SentimentCard ticker={chartTicker} />
           {chatOpen ? <ChatPanel
             open={chatOpen}
@@ -210,7 +213,7 @@ export function WorkstationLayout() {
             loadHistory={loadChatHistory}
             onActions={onChatActions}
           /> : <button onClick={() => setChatOpen(true)} className="rounded border border-line bg-panel p-3 text-left text-[11px] text-accent">ABRIR ASISTENTE IA</button>}
-        </div>
+        </aside>
       </div>
     </div>
   );
