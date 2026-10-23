@@ -11,7 +11,7 @@ import pytest
 from app import db
 from app.charla import classify, common
 from app.charla.classify import ThemeReply, classify_text, keyword_theme
-from app.charla.content import OPEN_STEP, THEMES
+from app.charla.content import SCRIPT, THEMES
 from app.db.connection import connect, new_id, now_iso
 
 DESIGN_SAMPLES = [  # Presentador.dc.html QUOTES
@@ -25,6 +25,13 @@ DESIGN_SAMPLES = [  # Presentador.dc.html QUOTES
     ("Generar reportes de inventario y alertar faltantes.", "Operaciones"),
 ]
 OPS_TEXT = "Programar rutas y avisar a los clientes del estado de su pedido."  # keywords say Operaciones
+OPEN_STEP = [step.kind for step in SCRIPT].index("open")
+
+
+@pytest.fixture(autouse=True)
+def themed(monkeypatch):
+    """No step of the live script is themed; classify the first open one here."""
+    monkeypatch.setattr(classify, "THEMED_STEP", OPEN_STEP)
 
 
 def fake_response(content):

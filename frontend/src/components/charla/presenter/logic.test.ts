@@ -71,7 +71,8 @@ describe("controlsFor", () => {
 describe("labels and numbers", () => {
   it("formats the kind kicker", () => {
     expect(kindLabel({ kind: "quiz", number: 3, total_quiz: 7 })).toBe("QUIZ · PREGUNTA 3 DE 7");
-    expect(kindLabel({ kind: "open", number: null, total_quiz: 7 })).toBe("PREGUNTA ABIERTA");
+    expect(kindLabel({ kind: "open", number: 8, total_quiz: 13 })).toBe("PREGUNTA ABIERTA · 8 DE 13");
+    expect(kindLabel({ kind: "poll", number: 1, total_quiz: 13 })).toBe("ENCUESTA · 1 DE 13");
     expect(kindLabel({ kind: "closing", number: null, total_quiz: 7 })).toBe("CIERRE");
   });
 

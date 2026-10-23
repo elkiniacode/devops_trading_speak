@@ -6,7 +6,7 @@ import { CheckIcon, ClockIcon, LETTERS } from "./parts";
 /** After answering (or when time ran out): wait for the presenter's reveal. */
 export function AnsweredView({ state, answer }: { state: RoomState; answer: MyAnswer | null }) {
   const isOpen = state.kind === "open";
-  const label = isOpen ? "PREGUNTA ABIERTA" : `PREGUNTA ${state.number ?? ""} / ${state.total_quiz}`;
+  const label = `${isOpen ? "PREGUNTA ABIERTA" : "PREGUNTA"} ${state.number ?? ""} / ${state.total_quiz}`;
 
   if (!answer) {
     return (

@@ -12,6 +12,7 @@ const BASE_POINTS = 500;
 export function ResultView({ state, me }: { state: RoomState; me: Me }) {
   const points = me.result?.points ?? 0;
   const isOpen = state.kind === "open";
+  const isPoll = state.kind === "poll";
 
   let tone: string;
   let icon: ReactNode;
@@ -23,6 +24,12 @@ export function ResultView({ state, me }: { state: RoomState; me: Me }) {
     icon = shared ? <CheckIcon /> : <ClockIcon />;
     title = shared ? "PREGUNTA ABIERTA" : "SIN RESPUESTA";
     note = shared ? "¡Gracias por compartir!" : "Esta vez no enviaste respuesta.";
+  } else if (isPoll) {
+    const voted = me.answer?.choice != null;
+    tone = voted ? s.ok : s.late;
+    icon = voted ? <CheckIcon /> : <ClockIcon />;
+    title = voted ? "¡GRACIAS!" : "SE ACABÓ EL TIEMPO";
+    note = "Encuesta: no suma puntos";
   } else if (!me.answer || me.answer.choice === null) {
     // me.result is always present after a reveal; no answer means time ran out.
     tone = s.late;
@@ -43,7 +50,7 @@ export function ResultView({ state, me }: { state: RoomState; me: Me }) {
 
   const correct = state.reveal?.answer ?? null;
   const options = state.question?.options ?? [];
-  const quizCorrect = isOpen ? undefined : me.result?.correct === true;
+  const quizCorrect = state.kind === "quiz" ? me.result?.correct === true : undefined;
 
   return (
     <div className={`${s.view} ${s.rise}`}>
@@ -54,7 +61,7 @@ export function ResultView({ state, me }: { state: RoomState; me: Me }) {
         <span className={s.gainNote}>{note}</span>
       </div>
 
-      {!isOpen && correct !== null && (
+      {correct !== null && (
         <div className={s.card}>
           <span className={s.cardLabel}>RESPUESTA CORRECTA</span>
           <span className={s.cardStrong}>

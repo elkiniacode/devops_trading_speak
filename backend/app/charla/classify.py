@@ -20,7 +20,7 @@ from app.db.connection import connect
 from app.llm import client
 
 from . import common
-from .content import OPEN_QUESTION, OPEN_STEP, THEMES
+from .content import THEMED_STEP, THEMES, title_of
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class ThemeReply(BaseModel):
 
 
 SYSTEM_PROMPT = f"""Clasificas respuestas de asistentes a una charla sobre agentes de IA.
-La pregunta fue: "{OPEN_QUESTION}"
+La pregunta fue: "{title_of(THEMED_STEP) if THEMED_STEP is not None else ""}"
 
 Elige el único tema que mejor describe el proceso que la persona quiere delegar:
 - Ventas y atención: ventas, cotizaciones, seguimiento a clientes, servicio al cliente, soporte por WhatsApp, leads.
@@ -216,7 +216,7 @@ async def reclassify_pending() -> int:
         rows = conn.execute(
             "SELECT id FROM charla_answers WHERE step = ? AND open_text IS NOT NULL AND theme IS NULL"
             " ORDER BY created_at",
-            (OPEN_STEP,),
+            (THEMED_STEP,),
         ).fetchall()
     results = await asyncio.gather(*(_classify_answer(row["id"]) for row in rows))
     return sum(results)

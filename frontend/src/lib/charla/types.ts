@@ -3,34 +3,34 @@
  * Owned by team-lead. Don't redefine these elsewhere; ask the lead to change them.
  */
 
-export type StepKind = "quiz" | "open" | "closing";
+export type StepKind = "poll" | "quiz" | "open" | "closing";
 export type Phase = "idle" | "open" | "closed" | "revealed";
 export type PhoneStatus = "none" | "given" | "skipped";
 export type SalaView = "wait" | "question" | "answered" | "result" | "open" | "phone" | "end";
 
 export interface PublicQuestion {
   text: string;
-  /** Four options for a quiz; [] for the open question. */
+  /** Four options for a poll or quiz; [] for an open question. */
   options: string[];
-  /** Only for the open question. */
+  /** Only for open questions. */
   placeholder: string | null;
 }
 
 export interface Reveal {
-  /** Correct option index (quiz) or null (open). */
+  /** Correct option index (quiz) or null (poll, open). */
   answer: number | null;
   why: string | null;
-  /** Answers per option (quiz) or null (open). */
+  /** Answers per option (poll, quiz) or null (open). */
   distribution: number[] | null;
 }
 
 export interface RoomState {
   version: number;
   server_now_ms: number;
-  step: number; // 0..8
+  step: number; // 0..closing step
   kind: StepKind;
   phase: Phase;
-  /** 1..7 for quiz steps, null otherwise. */
+  /** 1-based question number, null at the closing step. */
   number: number | null;
   total_quiz: number;
   /** Only while phase === "open"; count down locally from the moment it arrived. */
@@ -51,7 +51,7 @@ export interface MyAnswer {
 }
 
 export interface MyResult {
-  /** null for the open question. */
+  /** Quiz only; null for polls and open questions. */
   correct: boolean | null;
   points: number;
 }
@@ -121,7 +121,7 @@ export interface ScriptStep {
   step: number;
   kind: StepKind;
   title: string;
-  /** Quiz only. */
+  /** Polls and quizzes. */
   options: string[];
   answer: number | null;
   why: string | null;

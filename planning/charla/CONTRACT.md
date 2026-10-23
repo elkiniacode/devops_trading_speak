@@ -47,12 +47,15 @@ Laptop: /charla/presentador/  (key gate) launches, closes, reveals, next; rankin
 
 ## 2. Content (`backend/app/charla/content.py`, written by the lead and owned by backend-room)
 
-- **Steps 0–6** are `quiz`; `QUESTIONS[i]` holds `text`, 4 `options`, `answer` (an index) and `why`.
-- **Step 7** is `open` (`OPEN_QUESTION`, `OPEN_PLACEHOLDER`, at most `OPEN_MAX_CHARS=280`).
-- **Step 8** is `closing` (`CLOSING_TITLE`).
-- **Durations:** `QUESTION_MS=20000`, `OPEN_MS=60000`, `GRACE_MS=1500`.
+- **`SCRIPT`** is the ordered list of steps (`STEPS` of them). Each `Step` has a `kind`, `text`, `options`, `answer`, `why` and `placeholder`.
+  - `poll`: 4 `options`, no right answer, 0 points. Bars are shown, nothing is marked correct.
+  - `quiz`: 4 `options`, `answer` (an index) and `why`.
+  - `open`: free text with a `placeholder`, at most `OPEN_MAX_CHARS=280`.
+  - `closing`: always the last step (`CLOSING_STEP`). `QUESTION_COUNT = STEPS - 1` is sent as `total_quiz`; `number` is `step + 1` for every other step.
+- **Durations:** `QUESTION_MS=20000` (poll, quiz), `OPEN_MS=60000`, `GRACE_MS=1500`.
 - **Scoring:** `quiz_points(correct, elapsed_ms)` = 500 + round(500 × remaining/20000), or 0 if wrong. A non-empty open answer earns `OPEN_POINTS=100`.
-- **Themes:** `THEMES = ("Ventas y atención", "Finanzas", "Operaciones", "Marketing", "Recursos humanos", "Otro")`.
+- **Themes:** `THEMES = ("Ventas y atención", "Finanzas", "Operaciones", "Marketing", "Recursos humanos", "Otro")`. Only the answers of `THEMED_STEP` are classified; with `None`, `themes` is `[]`. Presenter quotes are the current step's open answers.
+- **CSV:** one `pN` column per question: the letter for a poll, the letter plus ✓/✗ for a quiz, the text for an open question.
 - **Helpers:** `kind_of(step)`, `title_of(step)` and `duration_ms(step)`.
 
 ## 3. Database (`backend/app/db/schema.py`, written by the lead)
@@ -311,7 +314,7 @@ All of these are `POST` and return `{"ok": true}`; the change arrives over the a
   "email": {"queued": 0, "sent": 31, "failed": 1, "last_error": null}
 }
 ```
-- `script` lists all 9 steps.
+- `script` lists every step of `SCRIPT`.
 - `counts.answered` and `counts.correct` are for the current step.
 - `distribution` is live for the current quiz step, or null.
 - `themes` lists all 6, in `THEMES` order, counting the open step.

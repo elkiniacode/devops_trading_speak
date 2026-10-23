@@ -178,7 +178,7 @@ def next_step() -> None:
 
 
 def goto(step: int) -> None:
-    """Jump to any step 0-8 (answers are kept)."""
+    """Jump to any step (answers are kept)."""
     if not 0 <= step <= content.CLOSING_STEP:
         raise HTTPException(400, BAD_STEP)
     _move_to(step, _load_state())
@@ -247,12 +247,13 @@ def submit_answer(attendee_id: str, step: int, choice: int | None, text: str | N
     kind = content.kind_of(step)
     elapsed = max(0, now - (state["opened_at_ms"] or now))
     open_text: str | None = None
-    if kind == "quiz":
-        if not isinstance(choice, int) or isinstance(choice, bool) or not 0 <= choice < len(LETTERS):
+    if kind in ("quiz", "poll"):
+        options = content.SCRIPT[step].options
+        if not isinstance(choice, int) or isinstance(choice, bool) or not 0 <= choice < len(options):
             raise HTTPException(400, BAD_CHOICE)
-        correct = choice == content.QUESTIONS[step].answer
-        points = content.quiz_points(correct, elapsed)
-    else:  # the open question (the closing step never opens)
+        correct = choice == content.SCRIPT[step].answer
+        points = content.quiz_points(correct, elapsed) if kind == "quiz" else 0
+    else:  # an open question (the closing step never opens)
         open_text = (text or "").strip()
         if len(open_text) < OPEN_MIN_CHARS:
             raise HTTPException(400, SHORT_TEXT)
@@ -276,7 +277,7 @@ def submit_answer(attendee_id: str, step: int, choice: int | None, text: str | N
             raise HTTPException(409, ALREADY_ANSWERED) from None
     common.bus.bump(public=False)
     _bump_attendee(attendee_id)
-    if kind == "open":
+    if step == content.THEMED_STEP:
         _schedule_classify(answer_id)
 
 
@@ -369,13 +370,10 @@ def _distribution(conn: sqlite3.Connection, step: int) -> list[int]:
 
 
 def _question(step: int) -> dict | None:
-    kind = content.kind_of(step)
-    if kind == "quiz":
-        q = content.QUESTIONS[step]
-        return {"text": q.text, "options": list(q.options), "placeholder": None}
-    if kind == "open":
-        return {"text": content.OPEN_QUESTION, "options": [], "placeholder": content.OPEN_PLACEHOLDER}
-    return None
+    q = content.SCRIPT[step]
+    if q.kind == "closing":
+        return None
+    return {"text": q.text, "options": list(q.options), "placeholder": q.placeholder}
 
 
 def _public_state(conn: sqlite3.Connection, state: sqlite3.Row, now: int) -> dict:
@@ -383,8 +381,8 @@ def _public_state(conn: sqlite3.Connection, state: sqlite3.Row, now: int) -> dic
     kind = content.kind_of(step)
     reveal = None
     if phase == "revealed":
-        if kind == "quiz":
-            q = content.QUESTIONS[step]
+        if kind in ("quiz", "poll"):
+            q = content.SCRIPT[step]
             reveal = {"answer": q.answer, "why": q.why, "distribution": _distribution(conn, step)}
         else:
             reveal = {"answer": None, "why": None, "distribution": None}
@@ -398,8 +396,8 @@ def _public_state(conn: sqlite3.Connection, state: sqlite3.Row, now: int) -> dic
         "step": step,
         "kind": kind,
         "phase": phase,
-        "number": step + 1 if kind == "quiz" else None,
-        "total_quiz": content.QUIZ_STEPS,
+        "number": step + 1 if kind != "closing" else None,
+        "total_quiz": content.QUESTION_COUNT,
         "remaining_ms": remaining,
         "duration_ms": content.duration_ms(step),
         "question": _question(step),
@@ -423,7 +421,7 @@ def _me(conn: sqlite3.Connection, state: sqlite3.Row, attendee_id: str) -> dict 
     result = None
     if state["phase"] == "revealed" and kind != "closing":
         points = row["points"] if row else 0
-        correct = None if kind == "open" else bool(row and row["correct"])
+        correct = bool(row and row["correct"]) if kind == "quiz" else None
         result = {"correct": correct, "points": points}
     if person["phone"]:
         phone_status = "given"
@@ -483,7 +481,7 @@ def admin_view() -> dict:
         for row in conn.execute(
             "SELECT theme, COUNT(*) AS n FROM charla_answers"
             " WHERE step = ? AND theme IS NOT NULL AND hidden = 0 GROUP BY theme",
-            (content.OPEN_STEP,),
+            (content.THEMED_STEP,),
         ):
             name = row["theme"] if row["theme"] in theme_counts else "Otro"
             theme_counts[name] += row["n"]
@@ -503,7 +501,7 @@ def admin_view() -> dict:
                    FROM charla_answers ans JOIN charla_attendees a ON a.id = ans.attendee_id
                    WHERE ans.step = ? AND ans.open_text IS NOT NULL
                    ORDER BY ans.created_at DESC, ans.rowid DESC""",
-                (content.OPEN_STEP,),
+                (step,),
             )
         ]
         ranking = _ranking(conn, state)[:RANKING_LIMIT]
@@ -521,8 +519,8 @@ def admin_view() -> dict:
                 "answered": answers["answered"],
                 "correct": answers["correct"],
             },
-            "distribution": _distribution(conn, step) if content.kind_of(step) == "quiz" else None,
-            "themes": [{"name": name, "count": count} for name, count in theme_counts.items()],
+            "distribution": _distribution(conn, step) if content.kind_of(step) in ("quiz", "poll") else None,
+            "themes": [{"name": n, "count": c} for n, c in theme_counts.items()] if step == content.THEMED_STEP else [],
             "quotes": quotes,
             "ranking": ranking,
             "email": _email_stats(),
@@ -530,16 +528,8 @@ def admin_view() -> dict:
 
 
 def _script_step(step: int) -> dict:
-    kind = content.kind_of(step)
-    q = content.QUESTIONS[step] if kind == "quiz" else None
-    return {
-        "step": step,
-        "kind": kind,
-        "title": content.title_of(step),
-        "options": list(q.options) if q else [],
-        "answer": q.answer if q else None,
-        "why": q.why if q else None,
-    }
+    q = content.SCRIPT[step]
+    return {"step": step, "kind": q.kind, "title": q.text, "options": list(q.options), "answer": q.answer, "why": q.why}
 
 
 def _email_stats() -> dict:
@@ -554,8 +544,8 @@ def _email_stats() -> dict:
 
 CSV_HEADER = [
     "puesto", "usuario", "correo", "verificado", "celular", "autoriza_whatsapp", "puntaje", "correctas",
-    *(f"p{i}" for i in range(1, content.QUIZ_STEPS + 1)),
-    "abierta", "tema", "registrado",
+    *(f"p{i}" for i in range(1, content.QUESTION_COUNT + 1)),
+    "registrado",
 ]
 
 
@@ -575,14 +565,7 @@ def export_csv() -> str:
     for position, entry in enumerate(ordered, 1):
         person = people[entry["attendee_id"]]
         mine = answers.get(entry["attendee_id"], {})
-        quiz_cells = []
-        for step in range(content.QUIZ_STEPS):
-            row = mine.get(step)
-            if row is None or row["choice"] is None:
-                quiz_cells.append("")
-            else:
-                quiz_cells.append(LETTERS[row["choice"]] + ("✓" if row["correct"] else "✗"))
-        open_row = mine.get(content.OPEN_STEP)
+        cells = [_answer_cell(step, mine.get(step)) for step in range(content.QUESTION_COUNT)]
         writer.writerow([
             position,
             _cell(person["username"]),
@@ -592,12 +575,20 @@ def export_csv() -> str:
             "sí" if person["phone_consent_at"] else "no",
             entry["score"],
             entry["correct"],
-            *quiz_cells,
-            _cell(open_row["open_text"] or "") if open_row else "",
-            (open_row["theme"] or "") if open_row else "",
+            *cells,
             person["created_at"],
         ])
     return "﻿" + out.getvalue()
+
+
+def _answer_cell(step: int, row: sqlite3.Row | None) -> str:
+    """Letter for a poll, letter plus check/cross for a quiz, the text for an open question."""
+    if row is None:
+        return ""
+    if row["choice"] is None:
+        return _cell(row["open_text"] or "")
+    mark = ("✓" if row["correct"] else "✗") if content.kind_of(step) == "quiz" else ""
+    return LETTERS[row["choice"]] + mark
 
 
 def _cell(value: str) -> str:

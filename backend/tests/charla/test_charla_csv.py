@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from app.charla import content, room
 
+KINDS = [step.kind for step in content.SCRIPT]
+Q, OPEN = KINDS.index("quiz"), KINDS.index("open")
 HEADER = ("puesto;usuario;correo;verificado;celular;autoriza_whatsapp;puntaje;correctas;"
-          "p1;p2;p3;p4;p5;p6;p7;abierta;tema;registrado")
+          + "".join(f"p{i};" for i in range(1, content.QUESTION_COUNT + 1)) + "registrado")
 
 
 def test_csv_export(charla_client, admin, enter, bearer, clock):
@@ -15,14 +17,18 @@ def test_csv_export(charla_client, admin, enter, bearer, clock):
     act = lambda name, json=None: charla_client.post(f"/api/charla/admin/{name}", headers=admin, json=json)  # noqa: E731
     answer = lambda token, body: charla_client.post("/api/charla/answer", headers=bearer(token), json=body)  # noqa: E731
 
-    right = content.QUESTIONS[0].answer
-    act("launch")
-    answer(ana, {"step": 0, "choice": right})
-    answer(beto, {"step": 0, "choice": (right + 1) % 4})
+    right = content.SCRIPT[Q].answer
+    act("launch")  # step 0 is a poll
+    answer(ana, {"step": 0, "choice": 3})
     act("close")
-    act("goto", {"step": content.OPEN_STEP})
+    act("goto", {"step": Q})
     act("launch")
-    answer(beto, {"step": 7, "text": "=HYPERLINK(malo)"})
+    answer(ana, {"step": Q, "choice": right})
+    answer(beto, {"step": Q, "choice": (right + 1) % 4})
+    act("close")
+    act("goto", {"step": OPEN})
+    act("launch")
+    answer(beto, {"step": OPEN, "text": "=HYPERLINK(malo)"})
     charla_client.post("/api/charla/phone", headers=bearer(ana), json={"phone": "3001234567", "consent": True})
 
     assert charla_client.get("/api/charla/admin/export.csv").status_code == 401
@@ -40,11 +46,11 @@ def test_csv_export(charla_client, admin, enter, bearer, clock):
     assert lines[0] == HEADER
     ana_row, beto_row = (line.split(";") for line in lines[1:])
     assert ana_row[:8] == ["1", "Ana", "ana@example.com", "sí", "3001234567", "sí", "1000", "1"]
-    assert ana_row[8] == "ABCD"[right] + "✓" and ana_row[9:15] == [""] * 6
+    assert ana_row[8] == "D"  # poll: the letter, no mark
+    assert ana_row[8 + Q] == "ABCD"[right] + "✓" and ana_row[8 + OPEN] == ""
     assert beto_row[:8] == ["2", "Beto", "beto@example.com", "sí", "", "no", "100", "0"]
-    assert beto_row[8] == "ABCD"[(right + 1) % 4] + "✗"
-    assert beto_row[15] == "'=HYPERLINK(malo)"  # formulas neutralised
-    assert beto_row[16] in content.THEMES
+    assert beto_row[8] == "" and beto_row[8 + Q] == "ABCD"[(right + 1) % 4] + "✗"
+    assert beto_row[8 + OPEN] == "'=HYPERLINK(malo)"  # formulas neutralised
     assert len(ana_row) == len(HEADER.split(";"))
 
 

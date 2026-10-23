@@ -43,7 +43,7 @@ export function ProjectionSala({ view, receivedAt }: { view: AdminView; received
         </span>
       </div>
     );
-  } else if (state.kind === "quiz") {
+  } else if (state.kind === "quiz" || state.kind === "poll") {
     const revealed = state.phase === "revealed";
     const why = revealed ? (state.reveal?.why ?? step?.why ?? null) : null;
     body = (

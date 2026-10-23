@@ -8,7 +8,7 @@ import styles from "./presenter.module.css";
 interface DistributionProps {
   options: string[];
   counts: number[];
-  /** Index of the correct option, highlighted only when `revealed`. */
+  /** Index of the correct option, highlighted only when `revealed`; null for a poll. */
   answer: number | null;
   revealed: boolean;
   big?: boolean;
@@ -21,7 +21,7 @@ export function DistributionBars({ options, counts, answer, revealed, big = fals
   return (
     <ul className={styles.bars} data-size={big ? "big" : "normal"} data-testid="pres-distribution">
       {options.map((text, i) => {
-        const mark = !revealed ? "live" : i === answer ? "correct" : "dim";
+        const mark = !revealed || answer === null ? "live" : i === answer ? "correct" : "dim";
         return (
           <li key={i} className={styles.barRow} data-mark={mark} data-testid={`pres-option-${i}`}>
             <span className={styles.barKey}>{LETTERS[i] ?? i + 1}</span>

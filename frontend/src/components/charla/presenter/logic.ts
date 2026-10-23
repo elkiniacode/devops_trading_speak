@@ -3,9 +3,6 @@ import type { AdminState, Phase, RankingRow, StepKind } from "@/lib/charla/types
 
 export const LETTERS = ["A", "B", "C", "D"] as const;
 
-/** The closing step; SIGUIENTE stops here. */
-export const LAST_STEP = 8;
-
 export const PHASE_LABEL: Record<Phase, string> = {
   idle: "EN ESPERA",
   open: "RECIBIENDO RESPUESTAS",
@@ -15,16 +12,26 @@ export const PHASE_LABEL: Record<Phase, string> = {
 
 /** Small caps tag under each script step. */
 export const STEP_TAG: Record<StepKind, string> = {
+  poll: "ENCUESTA",
   quiz: "QUIZ · 1000 PTS",
   open: "PREGUNTA ABIERTA",
   closing: "CIERRE",
 };
 
-/** Kicker above the centre title, e.g. "QUIZ · PREGUNTA 3 DE 7". */
+/** Kicker above the centre title, e.g. "QUIZ · PREGUNTA 3 DE 13". */
 export function kindLabel(state: Pick<AdminState, "kind" | "number" | "total_quiz">): string {
-  if (state.kind === "quiz") return `QUIZ · PREGUNTA ${state.number ?? "?"} DE ${state.total_quiz}`;
-  return STEP_TAG[state.kind];
+  const count = `${state.number ?? "?"} DE ${state.total_quiz}`;
+  if (state.kind === "quiz") return `QUIZ · PREGUNTA ${count}`;
+  if (state.kind === "closing") return STEP_TAG.closing;
+  return `${STEP_TAG[state.kind]} · ${count}`;
 }
+
+const REVEAL_LABEL: Record<StepKind, string> = {
+  poll: "MOSTRAR RESULTADOS",
+  quiz: "REVELAR RESPUESTA",
+  open: "MOSTRAR EN PANTALLA",
+  closing: "REVELAR RESPUESTA",
+};
 
 export type Action = "launch" | "phoneNow" | "close" | "reveal" | "next" | "resetStep";
 
@@ -64,10 +71,10 @@ export function controlsFor(
     launch,
     close: { label: "CERRAR RESPUESTAS", enabled: !closing && phase === "open" },
     reveal: {
-      label: kind === "open" ? "MOSTRAR EN PANTALLA" : "REVELAR RESPUESTA",
+      label: REVEAL_LABEL[kind],
       enabled: !closing && phase === "closed",
     },
-    next: { label: "SIGUIENTE →", enabled: state.step < LAST_STEP },
+    next: { label: "SIGUIENTE →", enabled: !closing }, // the closing step is the last one
     resetStep: { label: "Reiniciar pregunta", enabled: !closing && (phase !== "idle" || answered > 0) },
   };
 }

@@ -8,7 +8,10 @@ from fastapi.testclient import TestClient
 from app.charla import common, content, room
 from app.db.connection import connect
 
-Q0_RIGHT = content.QUESTIONS[0].answer  # 2
+KINDS = [step.kind for step in content.SCRIPT]
+Q = KINDS.index("quiz")  # first quiz step
+OPEN = KINDS.index("open")  # first open step
+Q0_RIGHT = content.SCRIPT[Q].answer
 Q0_WRONG = (Q0_RIGHT + 1) % 4
 
 
@@ -16,6 +19,12 @@ Q0_WRONG = (Q0_RIGHT + 1) % 4
 def act(charla_client, admin):
     """``act(name, json=None) -> response`` for POST /api/charla/admin/<name>."""
     return lambda name, json=None: charla_client.post(f"/api/charla/admin/{name}", headers=admin, json=json)
+
+
+@pytest.fixture
+def themed(monkeypatch):
+    """Classify the answers of the first open step into THEMES."""
+    monkeypatch.setattr(content, "THEMED_STEP", OPEN)
 
 
 @pytest.fixture
@@ -104,19 +113,19 @@ def test_transitions_and_their_409_messages(charla_client, act, clock):
     assert (s["step"], s["phase"], s["opened_at_ms"], s["deadline_ms"]) == (1, "idle", None, None)
     assert common.bus.public_version > before
 
-    assert act("goto", {"step": 7}).status_code == 200
+    assert act("goto", {"step": OPEN}).status_code == 200
     assert act("launch").status_code == 200
     assert state()["deadline_ms"] == clock.now + content.OPEN_MS
     assert act("close").status_code == 200
 
-    assert act("goto", {"step": 9}).status_code == 400
+    assert act("goto", {"step": content.STEPS}).status_code == 400
     assert act("goto", {"step": -1}).status_code == 400
-    assert act("goto", {"step": 8}).status_code == 200
+    assert act("goto", {"step": content.CLOSING_STEP}).status_code == 200
     assert act("launch").status_code == 200  # closing step: raises the WhatsApp prompt, stays idle
     s = state()
     assert s["phase"] == "idle" and s["phone_prompt"] == 1
     assert act("next").status_code == 200
-    assert state()["step"] == 8  # never past the closing step
+    assert state()["step"] == content.CLOSING_STEP  # never past the closing step
 
 
 def test_reset_step_deletes_only_the_current_step(charla_client, act, enter, answer):
@@ -193,21 +202,22 @@ def test_answer_rules(charla_client, act, enter, answer, clock):
     beto = enter("Beto", "beto@example.com")
     caro = enter("Caro", "caro@example.com")
 
-    assert_409(answer(ana, 0, Q0_RIGHT), room.QUESTION_CLOSED)  # before launch
+    act("goto", {"step": Q})
+    assert_409(answer(ana, Q, Q0_RIGHT), room.QUESTION_CLOSED)  # before launch
     act("launch")
-    assert_409(answer(ana, 1, 0), room.QUESTION_CLOSED)  # not the current step
-    assert answer(ana, 0, 7).status_code == 400
-    assert answer(ana, 0, 7).json() == {"detail": room.BAD_CHOICE}
-    assert answer(ana, 0).json() == {"detail": room.BAD_CHOICE}
+    assert_409(answer(ana, Q + 1, 0), room.QUESTION_CLOSED)  # not the current step
+    assert answer(ana, Q, 7).status_code == 400
+    assert answer(ana, Q, 7).json() == {"detail": room.BAD_CHOICE}
+    assert answer(ana, Q).json() == {"detail": room.BAD_CHOICE}
 
-    res = answer(ana, 0, Q0_RIGHT)
+    res = answer(ana, Q, Q0_RIGHT)
     assert res.status_code == 200 and res.json() == {"accepted": True}  # nothing about correctness
-    assert_409(answer(ana, 0, Q0_WRONG), room.ALREADY_ANSWERED)
+    assert_409(answer(ana, Q, Q0_WRONG), room.ALREADY_ANSWERED)
 
     clock.advance(content.QUESTION_MS + 1000)  # past the deadline, inside the grace window
-    assert answer(beto, 0, Q0_RIGHT).status_code == 200
+    assert answer(beto, Q, Q0_RIGHT).status_code == 200
     clock.advance(content.GRACE_MS)  # now past deadline + grace, even if no tick ran yet
-    assert_409(answer(caro, 0, Q0_RIGHT), room.QUESTION_CLOSED)
+    assert_409(answer(caro, Q, Q0_RIGHT), room.QUESTION_CLOSED)
 
     with connect() as conn:
         rows = {r["ms"]: (r["points"], r["correct"]) for r in conn.execute("SELECT * FROM charla_answers")}
@@ -226,20 +236,20 @@ def test_answer_needs_a_session(charla_client):
     assert res.status_code == 401
 
 
-def test_open_answer_rules_theme_and_result(charla_client, act, enter, answer, me):
+def test_open_answer_rules_theme_and_result(charla_client, themed, act, enter, answer, me):
     ana = enter("Ana", "ana@example.com")
     beto = enter("Beto", "beto@example.com")
-    act("goto", {"step": content.OPEN_STEP})
+    act("goto", {"step": OPEN})
     act("launch")
-    assert answer(ana, 7, text="  corto  ").json() == {"detail": room.SHORT_TEXT}
-    assert answer(ana, 7, text="x" * (content.OPEN_MAX_CHARS + 1)).status_code == 400
-    assert answer(ana, 7, text="  Conciliar facturas de proveedores  ").status_code == 200
-    assert_409(answer(ana, 7, text="Otra respuesta distinta"), room.ALREADY_ANSWERED)
+    assert answer(ana, OPEN, text="  corto  ").json() == {"detail": room.SHORT_TEXT}
+    assert answer(ana, OPEN, text="x" * (content.OPEN_MAX_CHARS + 1)).status_code == 400
+    assert answer(ana, OPEN, text="  Conciliar facturas de proveedores  ").status_code == 200
+    assert_409(answer(ana, OPEN, text="Otra respuesta distinta"), room.ALREADY_ANSWERED)
 
     view = me(ana)
-    assert view["me"]["answer"] == {"step": 7, "choice": None, "text": "Conciliar facturas de proveedores"}
+    assert view["me"]["answer"] == {"step": OPEN, "choice": None, "text": "Conciliar facturas de proveedores"}
     assert view["state"]["question"]["options"] == []
-    assert view["state"]["question"]["placeholder"] == content.OPEN_PLACEHOLDER
+    assert view["state"]["question"]["placeholder"] == content.SCRIPT[OPEN].placeholder
 
     admin = room.admin_view()
     assert len(admin["quotes"]) == 1
@@ -259,7 +269,31 @@ def test_open_answer_rules_theme_and_result(charla_client, act, enter, answer, m
     assert me(beto)["me"]["result"] == {"correct": None, "points": 0}
 
 
-def test_classify_failure_never_breaks_the_answer(charla_client, act, enter, answer, monkeypatch):
+def test_open_answers_are_unthemed_without_a_themed_step(charla_client, act, enter, answer):
+    token = enter("Ana", "ana@example.com")
+    act("goto", {"step": OPEN})
+    act("launch")
+    answer(token, OPEN, text="Conciliar facturas de proveedores")
+    admin = room.admin_view()
+    assert admin["themes"] == [] and admin["quotes"][0]["theme"] is None
+
+
+def test_poll_has_no_right_answer_and_no_points(charla_client, act, enter, answer, me):
+    ana = enter("Ana", "ana@example.com")
+    beto = enter("Beto", "beto@example.com")
+    assert content.kind_of(0) == "poll"
+    act("launch")
+    assert answer(ana, 0, 1).status_code == 200
+    assert answer(beto, 0, 1).status_code == 200
+    assert room.admin_view()["distribution"] == [0, 2, 0, 0]
+    act("close")
+    act("reveal")
+    view = me(ana)
+    assert view["state"]["reveal"] == {"answer": None, "why": None, "distribution": [0, 2, 0, 0]}
+    assert view["me"]["result"] == {"correct": None, "points": 0} and view["me"]["score"] == 0
+
+
+def test_classify_failure_never_breaks_the_answer(charla_client, themed, act, enter, answer, monkeypatch):
     from app.charla import classify
 
     def boom(answer_id: str) -> None:
@@ -267,9 +301,9 @@ def test_classify_failure_never_breaks_the_answer(charla_client, act, enter, ans
 
     monkeypatch.setattr(classify, "schedule", boom)
     token = enter("Ana", "ana@example.com")
-    act("goto", {"step": content.OPEN_STEP})
+    act("goto", {"step": OPEN})
     act("launch")
-    assert answer(token, 7, text="Responder cotizaciones").status_code == 200
+    assert answer(token, OPEN, text="Responder cotizaciones").status_code == 200
 
 
 def test_answer_bumps_admin_and_attendee_versions_only(charla_client, act, enter, answer):
@@ -291,19 +325,21 @@ def test_answer_bumps_admin_and_attendee_versions_only(charla_client, act, enter
 def test_no_correctness_before_reveal(charla_client, act, enter, answer, me, clock):
     ana = enter("Ana", "ana@example.com")
     beto = enter("Beto", "beto@example.com")
+    act("goto", {"step": Q})
     act("launch")
     clock.advance(2000)
-    answer(ana, 0, Q0_RIGHT)
-    answer(beto, 0, Q0_WRONG)
+    answer(ana, Q, Q0_RIGHT)
+    answer(beto, Q, Q0_WRONG)
 
     view = me(ana)
     s = view["state"]
-    assert (s["step"], s["kind"], s["phase"], s["number"], s["total_quiz"]) == (0, "quiz", "open", 1, 7)
+    assert (s["step"], s["kind"], s["phase"], s["number"], s["total_quiz"]) == (
+        Q, "quiz", "open", Q + 1, content.QUESTION_COUNT)
     assert s["remaining_ms"] == content.QUESTION_MS - 2000 and s["duration_ms"] == content.QUESTION_MS
-    assert s["question"] == {"text": content.QUESTIONS[0].text, "options": list(content.QUESTIONS[0].options),
+    assert s["question"] == {"text": content.SCRIPT[Q].text, "options": list(content.SCRIPT[Q].options),
                              "placeholder": None}
     assert s["reveal"] is None and s["room_count"] == 2 and s["phone_prompt"] is False
-    assert view["me"]["answer"] == {"step": 0, "choice": Q0_RIGHT, "text": None}
+    assert view["me"]["answer"] == {"step": Q, "choice": Q0_RIGHT, "text": None}
     assert view["me"]["result"] is None and view["me"]["score"] == 0
 
     act("close")
@@ -316,25 +352,26 @@ def test_no_correctness_before_reveal(charla_client, act, enter, answer, me, clo
     distribution = [0, 0, 0, 0]
     distribution[Q0_RIGHT] += 1
     distribution[Q0_WRONG] += 1
-    assert view["state"]["reveal"] == {"answer": Q0_RIGHT, "why": content.QUESTIONS[0].why,
+    assert view["state"]["reveal"] == {"answer": Q0_RIGHT, "why": content.SCRIPT[Q].why,
                                        "distribution": distribution}
     assert view["me"]["result"] == {"correct": True, "points": 950}
     assert (view["me"]["score"], view["me"]["rank"]) == (950, 1)
     assert me(beto)["me"]["result"] == {"correct": False, "points": 0}
     assert me(beto)["me"]["rank"] == 2
 
-    act("next")  # step 0 is behind us: still settled, but `answer`/`result` are about step 1 now
+    act("next")  # step Q is behind us: still settled, but `answer`/`result` are about step Q + 1 now
     view = me(ana)
     assert view["me"]["answer"] is None and view["me"]["result"] is None
     assert view["me"]["score"] == 950
 
     act("launch")
     view = me(beto)
-    assert view["me"]["score"] == 0 and view["state"]["number"] == 2
+    assert view["me"]["score"] == 0 and view["state"]["number"] == Q + 2
 
 
 def test_unanswered_quiz_result_after_reveal(charla_client, act, enter, me):
     token = enter("Ana", "ana@example.com")
+    act("goto", {"step": Q})
     act("launch")
     act("close")
     act("reveal")
@@ -362,13 +399,14 @@ def test_ranking_tie_break_and_hidden(charla_client, act, enter, answer, me, clo
     for name in ("Ana", "Beto", "Caro", "Dani"):  # registered one second apart: Ana first
         tokens[name] = enter(name, f"{name.lower()}@example.com")
         clock.advance(1000)
+    act("goto", {"step": Q})
     act("launch")
     clock.advance(10)
-    answer(tokens["Beto"], 0, Q0_RIGHT)  # 1000 points, 10 ms
-    answer(tokens["Caro"], 0, Q0_RIGHT)  # 1000 points, 10 ms, registered after Beto
+    answer(tokens["Beto"], Q, Q0_RIGHT)  # 1000 points, 10 ms
+    answer(tokens["Caro"], Q, Q0_RIGHT)  # 1000 points, 10 ms, registered after Beto
     clock.advance(5)
-    answer(tokens["Ana"], 0, Q0_RIGHT)  # still 1000 points (rounding), but 15 ms
-    answer(tokens["Dani"], 0, Q0_WRONG)
+    answer(tokens["Ana"], Q, Q0_RIGHT)  # still 1000 points (rounding), but 15 ms
+    answer(tokens["Dani"], Q, Q0_WRONG)
 
     order = [r["username"] for r in room.admin_view()["ranking"]]
     assert order == ["Ana", "Beto", "Caro", "Dani"]  # nothing settled yet: registration order
@@ -395,11 +433,11 @@ def test_ranking_tie_break_and_hidden(charla_client, act, enter, answer, me, clo
     assert act("hide", {"hidden": True}).status_code == 400
 
 
-def test_hide_quote(charla_client, act, enter, answer):
+def test_hide_quote(charla_client, themed, act, enter, answer):
     token = enter("Ana", "ana@example.com")
-    act("goto", {"step": content.OPEN_STEP})
+    act("goto", {"step": OPEN})
     act("launch")
-    answer(token, 7, text="Calificar leads de ventas")
+    answer(token, OPEN, text="Calificar leads de ventas")
     answer_id = room.admin_view()["quotes"][0]["answer_id"]
     assert act("hide", {"answer_id": answer_id, "hidden": True}).status_code == 200
     view = room.admin_view()
@@ -436,17 +474,18 @@ def test_phone(charla_client, enter, me, bearer):
 
 def test_admin_view_shape(charla_client, act, enter, answer):
     token = enter("Ana", "ana@example.com")
+    act("goto", {"step": Q})
     act("launch")
-    answer(token, 0, Q0_RIGHT)
+    answer(token, Q, Q0_RIGHT)
     view = room.admin_view()
     assert set(view) == {"version", "server_now_ms", "state", "script", "counts", "distribution", "themes",
                          "quotes", "ranking", "email"}
     assert {"verification_on", "phone_prompt_at", "deadline_ms", "opened_at_ms", "room_count"} <= set(view["state"])
     assert view["state"]["phone_prompt_at"] is None  # CHARLA_PHONE_AT=off
     assert len(view["script"]) == content.STEPS
-    assert view["script"][0]["answer"] == Q0_RIGHT and len(view["script"][0]["options"]) == 4
-    assert view["script"][7] == {"step": 7, "kind": "open", "title": content.OPEN_QUESTION, "options": [],
-                                 "answer": None, "why": None}
+    assert view["script"][Q]["answer"] == Q0_RIGHT and len(view["script"][Q]["options"]) == 4
+    assert view["script"][OPEN] == {"step": OPEN, "kind": "open", "title": content.SCRIPT[OPEN].text, "options": [],
+                                    "answer": None, "why": None}
     assert view["counts"] == {"registered": 1, "active": 1, "verified": 1, "pending": 0, "with_phone": 0,
                               "answered": 1, "correct": 1}
     assert view["distribution"][Q0_RIGHT] == 1

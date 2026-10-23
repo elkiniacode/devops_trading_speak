@@ -42,10 +42,10 @@ async def test_attendee_stream_resends_me_after_own_answer(charla_client, enter,
     assert first["me"]["answer"] is None
 
     public = common.bus.public_version
-    room.submit_answer(attendee["id"], 0, content.QUESTIONS[0].answer, None)
+    room.submit_answer(attendee["id"], 0, 1, None)  # step 0 is a poll
     assert common.bus.public_version == public  # only this attendee's stream should resend
     second = parse(await asyncio.wait_for(events.__anext__(), 2))
-    assert second["me"]["answer"]["choice"] == content.QUESTIONS[0].answer
+    assert second["me"]["answer"]["choice"] == 1
     assert second["me"]["result"] is None
 
     monkeypatch.setattr(charla_room, "HEARTBEAT_INTERVAL", 0)

@@ -66,7 +66,7 @@ export function QuestionHead({ view, receivedAt }: { view: AdminView; receivedAt
 /** Body of the centre column for the current step's kind. */
 export function QuestionBody({ view }: { view: AdminView }) {
   const { state, counts } = view;
-  if (state.kind === "quiz") {
+  if (state.kind === "quiz" || state.kind === "poll") {
     const step = view.script[state.step];
     const options = step?.options.length ? step.options : (state.question?.options ?? []);
     const revealed = state.phase === "revealed";
@@ -87,7 +87,10 @@ export function QuestionBody({ view }: { view: AdminView }) {
   if (state.kind === "open") {
     return (
       <div className={styles.panelBox}>
-        <span className="c-label">TEMAS DETECTADOS POR IA · {counts.answered} RESPUESTAS</span>
+        <span className="c-label">
+          {view.themes.length ? "TEMAS DETECTADOS POR IA · " : "RESPUESTAS ABIERTAS · "}
+          {counts.answered} RESPUESTAS
+        </span>
         <ThemeBars themes={view.themes} />
       </div>
     );
