@@ -161,7 +161,7 @@ export function WorkstationLayout() {
       )}
 
       <div className="relative flex min-h-0 flex-1">
-        <main className="grid min-h-0 min-w-0 flex-1 gap-2 p-2 md:grid-cols-[272px_minmax(0,1fr)]">
+        <main className="grid min-h-0 min-w-0 flex-1 gap-2 p-2 md:grid-cols-[clamp(280px,22vw,420px)_minmax(0,1fr)]">
           <div className="min-h-0 max-md:h-[440px]">
             <Watchlist
               items={watchlist}
@@ -204,7 +204,7 @@ export function WorkstationLayout() {
           </div>
         </main>
 
-        <aside className="flex min-h-0 w-[336px] shrink-0 flex-col gap-2 overflow-y-auto p-2 pl-0">
+        <aside className="flex min-h-0 w-[clamp(320px,23vw,448px)] shrink-0 flex-col gap-2 overflow-y-auto p-2 pl-0">
           <SentimentCard ticker={chartTicker} />
           {chatOpen ? <ChatPanel
             open={chatOpen}
@@ -251,7 +251,7 @@ function OrderTicket({ ticker, quote, holdings, onDone }: { ticker: string | nul
       <div className="pb-1"><h2 className="font-heading text-[12px] font-bold tracking-wide text-accent">OPERAR · {ticker ?? "—"}</h2><span className="tabular text-[10px] text-muted">{quote ? formatMoney(quote.price) : "—"}</span></div>
       <div className="flex h-9 gap-1"><button onClick={() => setSide("buy")} className={`rounded border px-3 text-[10px] font-bold ${side === "buy" ? "border-gain bg-gain/10 text-gain" : "border-line text-muted"}`}>COMPRAR</button><button onClick={() => setSide("sell")} className={`rounded border px-3 text-[10px] font-bold ${side === "sell" ? "border-loss bg-loss/10 text-loss" : "border-line text-muted"}`}>VENDER</button></div>
       <div className="flex h-9 gap-1">{(["market", "limit", "stop"] as const).map((value) => <button key={value} onClick={() => setKind(value)} className={`flex-1 rounded border px-2 text-[9px] ${kind === value ? "border-accent text-accent" : "border-line text-muted"}`}>{value === "market" ? "MERCADO" : value === "limit" ? "LÍMITE" : "STOP"}</button>)}</div>
-      <label className="text-[9px] text-muted">MONTO USD<input aria-label="Monto USD" value={notional} onChange={(event) => setNotional(event.target.value)} type="number" min="1" step="any" className="mt-1 block h-8 w-full rounded border border-line-strong bg-ink px-2 text-[11px] text-fg" /></label>
+      <label className="text-[9px] text-muted">MONTO USD<input aria-label="MONTO USD" value={notional} onChange={(event) => setNotional(event.target.value)} type="number" min="1" step="any" className="mt-1 block h-8 w-full rounded border border-line-strong bg-ink px-2 text-[11px] text-fg" /></label>
       {kind !== "market" ? <label className="text-[9px] text-muted">PRECIO ACTIVACIÓN<input aria-label="Precio de activación" value={trigger} onChange={(event) => setTrigger(event.target.value)} type="number" min="0" step="any" className="mt-1 block h-8 w-full rounded border border-line-strong bg-ink px-2 text-[11px] text-fg" placeholder={quote ? String(quote.price) : "0.00"} /></label> : <div className="pb-1 text-[9px] text-muted">{estimated.toFixed(4)} acciones estimadas</div>}
       <button aria-label={`${side === "buy" ? "COMPRAR" : "VENDER"} ${ticker ?? ""}`} disabled={!ticker || busy} onClick={() => void place()} className={`h-9 rounded border px-4 text-[10px] font-bold ${side === "buy" ? "border-gain bg-gain/10 text-gain" : "border-loss bg-loss/10 text-loss"}`}>{busy ? "ENVIANDO…" : side === "buy" ? "COMPRAR" : "VENDER"}</button>
     </div>

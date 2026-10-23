@@ -33,7 +33,7 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
   const indicatorsRef = useRef<ISeriesApi<SeriesType>[]>([]);
   const predictionTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [timeframe, setTimeframe] = useState<(typeof TIMEFRAMES)[number]>("H1");
-  const [kind, setKind] = useState<"candles" | "line">("candles");
+  const [kind, setKind] = useState<"candles" | "line">("line");
   const [candles, setCandles] = useState<Candle[]>([]);
   const [sourceLabel, setSourceLabel] = useState("");
   const [enabled, setEnabled] = useState<Indicator[]>(["SMA20", "VOL"]);
@@ -79,7 +79,7 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
     if (seriesRef.current) chart.removeSeries?.(seriesRef.current);
     const series = kind === "candles"
       ? chart.addSeries(CandlestickSeries, { upColor: "#5eead4", downColor: "#ff7a7a", borderUpColor: "#5eead4", borderDownColor: "#ff7a7a", wickUpColor: "#5eead4", wickDownColor: "#ff7a7a" })
-      : chart.addSeries(LineSeries, { color: "#5eead4", lineWidth: 2 });
+      : chart.addSeries(LineSeries, { color: "#18a8e0", lineWidth: 2 });
     seriesRef.current = series as ISeriesApi<"Candlestick">;
     if (kind === "candles") {
       (series as ISeriesApi<"Candlestick">).setData(shown.map((c) => ({ time: toChartTime(c.time), open: c.open, high: c.high, low: c.low, close: c.close })));
@@ -159,7 +159,7 @@ export function MainChart({ ticker, quote, points, mode, levels }: MainChartProp
     const series = seriesRef.current;
     if (!series?.createPriceLine) return;
     const lines = [
-      { value: quote?.price, color: "#5eead4", title: "ACTUAL" },
+      { value: quote?.price, color: "#18a8e0", title: "ACTUAL" },
       { value: levels?.entry, color: "#22d3ee", title: "ENTRADA" },
       { value: levels?.stopLoss, color: "#ff7a7a", title: "SL" },
       { value: levels?.takeProfit, color: "#5eead4", title: "TP" },
