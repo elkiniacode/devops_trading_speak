@@ -161,7 +161,7 @@ export function WorkstationLayout() {
       )}
 
       <div className="relative flex min-h-0 flex-1">
-        <main className="grid min-h-0 min-w-0 flex-1 gap-2 p-2 md:grid-cols-[272px_minmax(0,1fr)_336px]">
+        <main className="grid min-h-0 min-w-0 flex-1 gap-2 p-2 md:grid-cols-[272px_minmax(0,1fr)]">
           <div className="min-h-0 max-md:h-[440px]">
             <Watchlist
               items={watchlist}
@@ -176,7 +176,7 @@ export function WorkstationLayout() {
             />
           </div>
 
-          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(260px,1fr)_auto_190px_220px] gap-2 overflow-y-auto">
+          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(390px,1fr)_auto_190px_220px] gap-2 overflow-y-auto">
             <MainChart
               ticker={chartTicker}
               quote={chartTicker ? prices[chartTicker] : null}

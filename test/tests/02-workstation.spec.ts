@@ -22,8 +22,8 @@ test('prediction and sample sentiment leave account state unchanged', async ({ p
   await page.getByRole('button', { name: 'Detalles' }).click();
   await expect(page.getByText('DATOS DE MUESTRA · FUENTE SIMULADA')).toBeVisible();
   await expect(page.getByText(/No representa opiniones reales/)).toBeVisible();
-  await page.getByRole('button', { name: 'INICIAR' }).click();
-  await expect(page.getByText('PREDICCIÓN')).toBeVisible();
+  await page.getByRole('button', { name: 'PREDECIR' }).click();
+  await expect(page.getByText('PREDECIR')).toBeVisible();
   await page.getByRole('button', { name: 'CERRAR' }).click();
   const after = await getPortfolio(request);
   expect(after.cash_balance).toBe(before.cash_balance);
